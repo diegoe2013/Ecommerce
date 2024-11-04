@@ -27,11 +27,11 @@ class DBHelper {
       future: fetchData(path, columnFilter, filterValue),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text("Error loading orders"));
+          return const Center(child: Text("Error loading orders"));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text("No orders found"));
+          return const Center(child: Text("No orders found"));
         } else {
           return itemBuilder(snapshot.data!);
         }

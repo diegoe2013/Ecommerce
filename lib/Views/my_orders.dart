@@ -4,6 +4,8 @@ import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class MyOrders extends StatefulWidget {
+  const MyOrders({super.key});
+
   @override
   _MyOrders createState() => _MyOrders();
 }
@@ -23,14 +25,14 @@ selectedStatus = status;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders'),
+        title: const Text('My Orders'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop()
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {},
           ),
         ],
@@ -87,7 +89,7 @@ selectedStatus = status;
         currentIndex: 3,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: ''),
@@ -103,7 +105,7 @@ class OrderTabButton extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onPressed;
 
-  OrderTabButton({
+  const OrderTabButton({super.key, 
     required this.label,
     required this.isSelected,
     required this.onPressed
@@ -132,7 +134,7 @@ class OrderCard extends StatelessWidget {
   final DateTime expiryDate;
   final String status;
 
-  OrderCard({
+  const OrderCard({super.key, 
     required this.id,
     required this.trackingNumber,
     required this.quantity,
@@ -145,7 +147,7 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -154,30 +156,30 @@ class OrderCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Order# $id', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('${expiryDate.day}/${expiryDate.month}/${expiryDate.year}', style: TextStyle(color: Colors.grey)),
+                Text('Order# $id', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('${expiryDate.day}/${expiryDate.month}/${expiryDate.year}', style: const TextStyle(color: Colors.grey)),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-            Text('Tracking number: $trackingNumber', style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 8),
+            Text('Tracking number: $trackingNumber', style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Quantity: $quantity'),
-                Text('Total Amount: \$${totalAmount}', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Total Amount: \$$totalAmount', style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 OutlinedButton(
                   onPressed: () {},
-                  child: Text('Details'),
+                  child: const Text('Details'),
                 ),
                 Text(
                   status,
