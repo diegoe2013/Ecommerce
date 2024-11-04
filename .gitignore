@@ -1,0 +1,11 @@
+# auto-generated dependencies
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# android
+/android/.gradle
+android/local.properties
+
+# build
+/build
