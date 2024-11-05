@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'login.dart';
 
 class CreateAccount extends StatelessWidget {
@@ -29,14 +30,14 @@ class CreateAccount extends StatelessWidget {
                   // Acción al presionar el icono de la cámara
                 },
                 child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.orange[50],
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.orange,
-                    size: 30,
-                  ),
+                radius: 40,
+                backgroundColor: Colors.orange[50],
+                child: SvgPicture.asset(
+                  'assets/icons/camera_icon.svg',
+                  width: 40, 
+                  height: 40,
                 ),
+              ),
               ),
             ),
             const SizedBox(height: 24),

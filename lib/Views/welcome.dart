@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'create_account.dart';
 import 'login.dart';
 
@@ -14,14 +15,14 @@ class Welcome extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono de la tienda (Placeholder)
+              // Icono de la tienda 
               CircleAvatar(
                 radius: 40,
                 backgroundColor: Colors.orange[50],
-                child: const Icon(
-                  Icons.shopping_bag, // Placeholder para el icono personalizado
-                  size: 40,
-                  color: Colors.orange,
+                child: SvgPicture.asset(
+                  'assets/icons/shopp_icon.svg',
+                  width: 40, 
+                  height: 40,
                 ),
               ),
               const SizedBox(height: 24),
