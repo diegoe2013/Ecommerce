@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:untitled/Views/choose_account_type.dart';
+import 'package:untitled/Views/welcome.dart';
 import 'login.dart';
 
 class CreateAccount extends StatelessWidget {
@@ -23,22 +26,18 @@ class CreateAccount extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  // Acción al presionar el icono de la cámara
-                },
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.orange[50],
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.orange,
-                    size: 30,
-                  ),
-                ),
+          
+            GestureDetector(
+              onTap: () {
+                // Acción al presionar el icono de la cámara
+              },
+              child: SvgPicture.asset(
+                'assets/icons/camera_icon.svg',
+                width: 80, 
+                height: 80,
               ),
             ),
+          
             const SizedBox(height: 24),
             TextFormField(
               decoration: InputDecoration(
@@ -98,7 +97,7 @@ class CreateAccount extends StatelessWidget {
                   //por ahora nos vamos al login a darle a done
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Login()),
+                    MaterialPageRoute(builder: (context) => const ChooseAccountType()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -123,6 +122,10 @@ class CreateAccount extends StatelessWidget {
               child: TextButton(
                 onPressed: () {
                   // Acción al presionar "Cancel"
+                  Navigator.pop(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Welcome()),
+                  );
                 },
                 child: const Text(
                   'Cancel',
