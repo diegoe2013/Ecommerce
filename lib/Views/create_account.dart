@@ -24,22 +24,18 @@ class CreateAccount extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  // Acción al presionar el icono de la cámara
-                },
-                child: CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.orange[50],
-                child: SvgPicture.asset(
-                  'assets/icons/camera_icon.svg',
-                  width: 40, 
-                  height: 40,
-                ),
-              ),
+          
+            GestureDetector(
+              onTap: () {
+                // Acción al presionar el icono de la cámara
+              },
+              child: SvgPicture.asset(
+                'assets/icons/camera_icon.svg',
+                width: 80, 
+                height: 80,
               ),
             ),
+          
             const SizedBox(height: 24),
             TextFormField(
               decoration: InputDecoration(

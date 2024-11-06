@@ -16,18 +16,12 @@ class Welcome extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Icono de la tienda 
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.orange[50],
-                child: SvgPicture.asset(
-                  'assets/icons/shopp_icon.svg',
-                  width: 40, 
-                  height: 40,
-                ),
+              SvgPicture.asset(
+                'assets/icons/shopp_icon.svg',
+                width: 80, 
+                height: 90,
               ),
               const SizedBox(height: 24),
-              
-             
               const Text(
                 'ShopHub',
                 style: TextStyle(
