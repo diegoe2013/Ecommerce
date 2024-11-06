@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Views/welcome.dart';
 import 'Profile.dart';
+
+import 'home.dart';
+
 class Login extends StatelessWidget {
   const Login({super.key});
 
@@ -73,10 +76,11 @@ class Login extends StatelessWidget {
                 onPressed: () {
                   // aquí navegamos al home, por ahora a profile
                   
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Profile()), 
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => HomeScreen()), // Reemplaza HomeScreen con tu pantalla de destino
+                  // );
+                  Navigator.pushNamed(context, '/home');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

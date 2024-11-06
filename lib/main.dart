@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:untitled/Views/my_orders.dart';
 
 // import 'Views/profile.dart';
 import 'Controllers/databaseHelper.dart';
+
+// Views
+import 'Views/create_account.dart';
+import 'Views/home.dart';
+import 'Views/login.dart';
+import 'Views/Profile.dart';
 import 'Views/welcome.dart';
 
 void main() async {
@@ -17,8 +24,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Firestore Demo',
-      home: Welcome(),
+      title: 'Ecommerce App',
+      initialRoute: '/welcome',
+      routes: {
+        '/create_account': (context) => const CreateAccount(),
+        '/home': (context) => const HomeScreen(),
+        '/login': (context) => const Login(),
+        '/my_orders': (context) => const MyOrders(),
+        '/profile': (context) => Profile(),
+        '/welcome': (context) => const Welcome(),
+      },
     );
   }
 }
