@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:untitled/Views/choose_account_type.dart';
+import 'package:untitled/Views/welcome.dart';
 import 'login.dart';
 
 class CreateAccount extends StatelessWidget {
@@ -95,7 +97,7 @@ class CreateAccount extends StatelessWidget {
                   //por ahora nos vamos al login a darle a done
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Login()),
+                    MaterialPageRoute(builder: (context) => const ChooseAccountType()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -120,6 +122,10 @@ class CreateAccount extends StatelessWidget {
               child: TextButton(
                 onPressed: () {
                   // Acción al presionar "Cancel"
+                  Navigator.pop(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Welcome()),
+                  );
                 },
                 child: const Text(
                   'Cancel',
