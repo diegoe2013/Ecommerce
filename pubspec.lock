@@ -153,7 +153,6 @@ packages:
     source: sdk
     version: "0.0.0"
   http:
-    dependency: transitive
     dependency: "direct main"
     description:
       name: http

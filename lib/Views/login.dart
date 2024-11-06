@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:untitled/Views/welcome.dart';
 import 'Profile.dart';
-=======
 
 import 'home.dart';
 
->>>>>>> 1937327 ([ADD] Home View)
 class Login extends StatelessWidget {
   const Login({super.key});
 
