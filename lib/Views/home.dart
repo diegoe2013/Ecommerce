@@ -96,8 +96,12 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Favoritos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.shopping_bag),
             label: 'Perfil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'My bag',
           ),
         ],
         selectedItemColor: Colors.orange,

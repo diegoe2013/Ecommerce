@@ -11,6 +11,7 @@ import 'Views/home.dart';
 import 'Views/login.dart';
 import 'Views/Profile.dart';
 import 'Views/welcome.dart';
+import 'Views/my_bag.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
+       // '/my_bag': (context) => const MyBag(),
       },
     );
   }
