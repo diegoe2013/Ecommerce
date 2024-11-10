@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
-       // '/my_bag': (context) => const MyBag(),
+        '/my_bag': (context) => const MyBag(),
       },
     );
   }

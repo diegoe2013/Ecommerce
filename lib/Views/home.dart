@@ -86,6 +86,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          if (index == 2) {
+            Navigator.pushNamed(context, '/my_bag');
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -97,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag),
-            label: 'My bag',
+            label: 'My Bag',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
