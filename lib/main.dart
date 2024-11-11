@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:untitled/Views/forgot_password.dart';
 import 'package:untitled/Views/my_orders.dart';
 
 // import 'Views/profile.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/create_account': (context) => const CreateAccount(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const Login(),
+        '/forgot_password': (context) => const ForgotPassword(),
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
