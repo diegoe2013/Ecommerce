@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:untitled/Views/order_details.dart';
 
 class MyOrders extends StatefulWidget {
   const MyOrders({super.key});
@@ -15,21 +14,19 @@ class _MyOrders extends State<MyOrders> {
   String selectedStatus = "Delivered";
 
   void updateSelectedStatus(String status) {
-setState(() {
-selectedStatus = status;
-});
-}
+    setState(() {
+      selectedStatus = status;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Orders'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop()
-        ),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop()),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -62,29 +59,23 @@ selectedStatus = status;
               ],
             ),
           ),
-
           Expanded(
-            child: dbHelper.getData(path: 'orders', columnFilter: 'shippingStatus', filterValue: selectedStatus,
-             itemBuilder: (orders) {
-              return ListView.builder(
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                var order = orders[index];
-                return OrderCard(
-                  id: order['id'],
-                  trackingNumber: order['trackingNumber'],
-                  quantity: order['itemCount'],
-                  totalAmount: order['totalAmount'],
-                  expiryDate: order['createdAt'].toDate(),
-                  status: order['shippingStatus'],
+            child: dbHelper.getData(
+                path: 'orders',
+                columnFilter: 'shippingStatus',
+                filterValue: selectedStatus,
+                itemBuilder: (orders) {
+                  return ListView.builder(
+                    itemCount: orders.length,
+                    itemBuilder: (context, index) {
+                      var order = orders[index];
+                      return OrderCard(order: order);
+                    },
                   );
-                },
-              );
-            }
+                }),
           ),
-        ),
-      ],
-    ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
         selectedItemColor: Colors.orange,
@@ -105,11 +96,11 @@ class OrderTabButton extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onPressed;
 
-  const OrderTabButton({super.key, 
-    required this.label,
-    required this.isSelected,
-    required this.onPressed
-  });
+  const OrderTabButton(
+      {super.key,
+      required this.label,
+      required this.isSelected,
+      required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -127,25 +118,13 @@ class OrderTabButton extends StatelessWidget {
 }
 
 class OrderCard extends StatelessWidget {
-  final String id;
-  final String trackingNumber;
-  final int quantity;
-  final int totalAmount;
-  final DateTime expiryDate;
-  final String status;
+  final Map<String, dynamic> order;
 
-  const OrderCard({super.key, 
-    required this.id,
-    required this.trackingNumber,
-    required this.quantity,
-    required this.totalAmount,
-    required this.expiryDate,
-    required this.status,
-});
+  const OrderCard({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
-
+    DateTime date = order['createdAt'].toDate();
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -156,37 +135,46 @@ class OrderCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Order# $id', style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('${expiryDate.day}/${expiryDate.month}/${expiryDate.year}', style: const TextStyle(color: Colors.grey)),
+                Text('Order# ${order['id']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('${date.day}/${date.month}/${date.year}',
+                    style: const TextStyle(color: Colors.grey)),
               ],
             ),
             const SizedBox(height: 8),
-
-            Text('Tracking number: $trackingNumber', style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
-
+            Text('Tracking number: ${order['trackingNumber']}',
+                style: TextStyle(color: Colors.grey)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Quantity: $quantity'),
-                Text('Total Amount: \$$totalAmount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('Quantity: ${order['itemCount']}'),
+                Text('Total Amount: \$${order['totalAmount']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 OutlinedButton(
-                  onPressed: () {},
-                  child: const Text('Details'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => order_details(order: order),
+                      ),
+                    );
+                  },
+                  child: const Text('Details'), // The button text
                 ),
                 Text(
-                  status,
-                  style: TextStyle(color: status == "Delivered"
-                                            ? Colors.green : status == "Processing"
-                                            ? Colors.amber[800] : Colors.red
-                  ),
+                  order['shippingStatus'],
+                  style: TextStyle(
+                      color: order['shippingStatus'] == "Delivered"
+                          ? Colors.green
+                          : order['shippingStatus'] == "Processing"
+                              ? Colors.amber[800]
+                              : Colors.red),
                 ),
               ],
             ),

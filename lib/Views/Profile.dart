@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Views/my_orders.dart';
 class Profile extends StatelessWidget {

@@ -92,6 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
           }
+          if(index == 3) {
+            Navigator.pushNamed(context, '/profile');
+          }
         },
         items: const [
           BottomNavigationBarItem(

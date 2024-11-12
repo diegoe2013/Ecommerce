@@ -17,7 +17,7 @@ import 'Views/my_bag.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -37,6 +37,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
         '/my_bag': (context) => const MyBag(),
+
       },
     );
   }

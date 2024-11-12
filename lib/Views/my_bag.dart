@@ -126,9 +126,11 @@ class _MyBagState extends State<MyBag> {
         onTap: (index) {
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
+          } else if(index == 3) {
+            Navigator.pushNamed(context, '/profile');
           } else if (index == 0) {
             Navigator.pushNamed(context, '/home');
-          }
+          } 
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
