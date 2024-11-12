@@ -62,6 +62,7 @@ class Login extends StatelessWidget {
               child: TextButton(
                 onPressed: () {
                   // Acción para recuperar contraseña
+                  Navigator.pushNamed(context, '/forgot_password');
                 },
                 child: const Text(
                   'Forgot your password?',
@@ -74,12 +75,8 @@ class Login extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // aquí navegamos al home, por ahora a profile
-                  
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => HomeScreen()), // Reemplaza HomeScreen con tu pantalla de destino
-                  // );
+                  // aquí navegamos al home
+
                   Navigator.pushNamed(context, '/home');
                 },
                 style: ElevatedButton.styleFrom(
@@ -103,10 +100,8 @@ class Login extends StatelessWidget {
               child: TextButton(
                 onPressed: () {
                   // Acción para cancelar
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Welcome()),
-                  );
+                  Navigator.pushNamed(context, '/welcome');
+                  
                 },
                 child: const Text(
                   'Cancel',

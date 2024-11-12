@@ -55,10 +55,12 @@ class ChooseAccountType extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Login()),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => const Login()),
+                  // );
+                  Navigator.pushNamed(context, '/login');
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

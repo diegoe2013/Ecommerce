@@ -49,13 +49,11 @@ class Welcome extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Navegación a la pantalla de crear cuenta
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateAccount()),
-                  );
+                  
+                  Navigator.pushNamed(context, '/create_account');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange, // Cambiado de primary a backgroundColor
+                  backgroundColor: Colors.orange, 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -69,7 +67,6 @@ class Welcome extends StatelessWidget {
               
               const SizedBox(height: 16),
               
-              // Texto "I already have an account" con icono de flecha
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -83,11 +80,8 @@ class Welcome extends StatelessWidget {
                   IconButton(
                     onPressed: () {
                       // Navegación a la pantalla de login
-                    
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Login()),
-                      );
+                   
+                      Navigator.pushNamed(context, '/login');
                     },
                     icon: const Icon(
                       Icons.arrow_forward,
