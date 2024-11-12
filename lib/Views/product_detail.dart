@@ -4,7 +4,7 @@ class ProductDetail extends StatelessWidget {
   final Map product;
 
   const ProductDetail({Key? key, required this.product}) : super(key: key);
-
+//keryjjj
   @override
   Widget build(BuildContext context) {
     return Scaffold(
