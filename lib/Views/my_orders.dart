@@ -165,7 +165,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Details'), // The button text
+                  child: const Text('Details'), 
                 ),
                 Text(
                   order['shippingStatus'],

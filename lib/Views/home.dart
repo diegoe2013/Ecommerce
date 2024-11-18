@@ -89,6 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         onTap: (index) {
+          if (index == 1) {
+            Navigator.pushNamed(context, '/favorites');
+          }
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
           }

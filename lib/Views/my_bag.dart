@@ -124,6 +124,9 @@ class _MyBagState extends State<MyBag> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
         onTap: (index) {
+          if (index == 1) {
+            Navigator.pushNamed(context, '/favorites');
+          }
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
           } else if(index == 3) {

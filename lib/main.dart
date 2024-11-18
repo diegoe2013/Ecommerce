@@ -13,6 +13,10 @@ import 'Views/login.dart';
 import 'Views/Profile.dart';
 import 'Views/welcome.dart';
 import 'Views/my_bag.dart';
+import 'Views/settings.dart';
+import 'Views/favorites.dart';
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ecommerce App',
-      initialRoute: '/welcome',
+      initialRoute: '/home',
       routes: {
         '/create_account': (context) => const CreateAccount(),
         '/home': (context) => const HomeScreen(),
@@ -37,6 +41,9 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
         '/my_bag': (context) => const MyBag(),
+        '/settings': (context) =>  Settings(),
+        '/favorites': (context) =>  const Favorites(),
+
 
       },
     );

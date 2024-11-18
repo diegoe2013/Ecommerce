@@ -5,11 +5,12 @@ class DBHelper {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addData(String path, Map<String, dynamic> data) async {
-    CollectionReference collection = FirebaseFirestore.instance.collection(path);
-    await collection.add(data);  }
+    CollectionReference collection =
+        FirebaseFirestore.instance.collection(path);
+    await collection.add(data);
+  }
 
   Future<void> deleteData(String path) async {
-
     await _firestore.doc(path).delete();
   }
 
@@ -39,7 +40,8 @@ class DBHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchData(String path, String? columnFilter, String? columnFilterValue) async {
+  Future<List<Map<String, dynamic>>> fetchData(
+      String path, String? columnFilter, String? columnFilterValue) async {
     Query query = _firestore.collection(path);
 
     if (columnFilter != null && columnFilterValue != null) {
@@ -49,11 +51,19 @@ class DBHelper {
     QuerySnapshot snapshot = await query.get();
 
     return snapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>
-      };
+      return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
     }).toList();
   }
 
-  }
+  Future<Map<String, dynamic>?> accessReference(DocumentReference<Map<String, dynamic>> ref) async {
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await ref.get();
+
+    if (snapshot.exists) {
+      return snapshot.data();
+    } else {
+      return null; 
+    }
+  } 
+}
+
+
