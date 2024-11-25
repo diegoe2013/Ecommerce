@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Views/my_orders.dart';
+import 'package:untitled/Views/settings.dart';
+
 class Profile extends StatelessWidget {
   final DBHelper dbHelper = DBHelper();
 
@@ -63,7 +65,7 @@ class Profile extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MyOrders()),
+                MaterialPageRoute(builder: (context) => const MyOrders()),
               );
             },
           ),
@@ -100,7 +102,12 @@ class Profile extends StatelessWidget {
             title: 'Settings',
             subtitle: 'Notifications, password',
             icon: Icons.chevron_right,
-              onTap: () {}
+              onTap: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Settings()),
+              );
+              }
           ),
         ],
       ),
