@@ -33,10 +33,10 @@ class MyApp extends StatelessWidget {
       title: 'Ecommerce App',
       initialRoute: '/home',
       routes: {
-        '/create_account': (context) => const CreateAccount(),
+        '/create_account': (context) =>  CreateAccount(),
         '/home': (context) => const HomeScreen(),
-        '/login': (context) => const Login(),
-        '/forgot_password': (context) => const ForgotPassword(),
+        '/login': (context) =>  Login(),
+        '/forgot_password': (context) =>  ForgotPassword(),
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),

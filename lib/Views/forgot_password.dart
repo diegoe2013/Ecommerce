@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:untitled/Controllers/auth.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+class ForgotPassword extends StatelessWidget {
+  ForgotPassword({super.key});
 
-class ForgotPassword extends StatefulWidget {
-  const ForgotPassword({super.key});
-
-  @override
-  State<ForgotPassword> createState() => _ForgotPasswordState();
-}
-
-class _ForgotPasswordState extends State<ForgotPassword> {
-  List<bool> isSelected = [true, false];
+  final AUthService _authService = AUthService(); // Instancia de AUthService
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
@@ -17,92 +15,98 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
+            const Text(
+              'Forgot Password',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Enter your email to receive a password reset link.',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            FormBuilder(
+              key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Password Recovery',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                  FormBuilderTextField(
+                    name: 'email',
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      fillColor: Colors.grey[200],
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'How would you like to restore your password?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  ToggleButtons(
-                    borderRadius: BorderRadius.circular(30),
-                    isSelected: isSelected,
-                    onPressed: (int index) {
-                      setState(() {
-                        for (int i = 0; i < isSelected.length; i++) {
-                          isSelected[i] = i == index;
-                        }
-                      });
-                    },
-                    fillColor: Colors.orange,
-                    color: Colors.black,
-                    selectedColor: Colors.white,
-                    children: const [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                        child: Text('SMS'),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(
+                        errorText: 'Email is required',
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                        child: Text('Email'),
+                      FormBuilderValidators.email(
+                        errorText: 'Enter a valid email',
                       ),
-                    ],
+                    ]),
                   ),
                 ],
               ),
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const EnterCode()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState?.saveAndValidate() == true) {
+                    final formData = _formKey.currentState?.value;
+                    final email = formData?['email'];
+                    await _authService.passwordReset(context, email);
+                    Future.delayed(const Duration(seconds: 2), () {
+                      Navigator.pushNamed(context, '/login');
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please fill in a valid email'),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text(
-                      'Next',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Send Reset Link',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.black54),
-                  ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.black54),
                 ),
-                const SizedBox(height: 32), 
-              ],
+              ),
             ),
           ],
         ),
@@ -110,6 +114,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     );
   }
 }
+
 
 
 class EnterCode extends StatelessWidget {
