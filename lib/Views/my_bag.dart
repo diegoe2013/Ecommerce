@@ -123,6 +123,8 @@ class _MyBagState extends State<MyBag> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.grey,
         onTap: (index) {
           if (index == 1) {
             Navigator.pushNamed(context, '/favorites');
@@ -136,10 +138,10 @@ class _MyBagState extends State<MyBag> {
           } 
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag, color: Colors.orange), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

@@ -51,7 +51,7 @@ class DBHelper {
     QuerySnapshot snapshot = await query.get();
 
     return snapshot.docs.map((doc) {
-      return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+      return doc.data() as Map<String, dynamic>;
     }).toList();
   }
 
