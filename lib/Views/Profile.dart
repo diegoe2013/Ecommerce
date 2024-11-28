@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Views/my_orders.dart';
+import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/settings.dart';
 
 class Profile extends StatelessWidget {
@@ -98,7 +99,12 @@ class Profile extends StatelessWidget {
                         title: 'Payment methods',
                         subtitle:'${user['paymentMethods']['type']} **${user['paymentMethods']['cardNumber'].toString().substring(14)}',
                         icon: Icons.chevron_right,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PaymentMethods()),
+                          );
+                        },
                       ),
                       const Divider(),
                       ProfileOption(
