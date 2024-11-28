@@ -216,7 +216,7 @@ class ItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(productData['category'],
-                      style: TextStyle(color: Colors.grey)),
+                      style: const TextStyle(color: Colors.grey)),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -5,9 +5,23 @@ class DBHelper {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addData(String path, Map<String, dynamic> data) async {
-    CollectionReference collection =
-        FirebaseFirestore.instance.collection(path);
-    await collection.add(data);
+  DocumentReference docRef = FirebaseFirestore.instance.doc(path);
+
+  await docRef.set(data); 
+}
+
+
+  String autoIncrement(List<Map<String, dynamic>> data) {
+    int max = 0;
+    for (int i = 0; i < data.length; i++) {
+      int id = int.parse(data[i]['id']);
+
+      if (id > max) {
+        max = id;
+      }
+    }
+
+    return (max + 1).toString();
   }
 
   Future<void> deleteData(String path) async {
@@ -51,19 +65,18 @@ class DBHelper {
     QuerySnapshot snapshot = await query.get();
 
     return snapshot.docs.map((doc) {
-      return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+      return doc.data() as Map<String, dynamic>;
     }).toList();
   }
 
-  Future<Map<String, dynamic>?> accessReference(DocumentReference<Map<String, dynamic>> ref) async {
+  Future<Map<String, dynamic>?> accessReference(
+      DocumentReference<Map<String, dynamic>> ref) async {
     DocumentSnapshot<Map<String, dynamic>> snapshot = await ref.get();
 
     if (snapshot.exists) {
       return snapshot.data();
     } else {
-      return null; 
+      return null;
     }
-  } 
+  }
 }
-
-

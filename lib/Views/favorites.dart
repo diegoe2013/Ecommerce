@@ -10,6 +10,7 @@ class Favorites extends StatefulWidget {
 }
 
 class _Favorites extends State<Favorites> {
+  final userId = 1;
   final DBHelper dbHelper = DBHelper();
 
   @override
@@ -18,10 +19,7 @@ class _Favorites extends State<Favorites> {
       appBar: AppBar(
         title: const Text('Favorites'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
         ],
       ),
       body: Padding(
@@ -29,50 +27,55 @@ class _Favorites extends State<Favorites> {
         child: Expanded(
           child: dbHelper.getData(
               path: 'users',
-              columnFilter: 'name',
-              filterValue: 'Diego Encarnación',
+              columnFilter: 'id',
+              filterValue: userId.toString(),
               itemBuilder: (users) {
                 var user = users[0];
-                var favorites = user['favorites'] as List<dynamic>;
+
+                var favorites = user['favorites'] as List<dynamic>? ?? [];
 
                 if (favorites.isEmpty) {
                   return const Center(child: Text('No favorites.'));
                 }
+
+                var favoriteList = [];
                 return ListView.builder(
                   itemCount: favorites.length,
                   itemBuilder: (context, index) {
-                    print("FAVORITES");
-                    var favoriteReference = favorites[index];
-                    var favorite =
-                        DBHelper().accessReference(favoriteReference);
 
-                    return ProductCard(product: favorite);
+                    favoriteList.add(DBHelper().accessReference(favorites[index]));
+                    return ProductCard(product: favoriteList[index]);
                   },
                 );
               }),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            OutlinedButton(
-              onPressed: () {},
-              child:
-                  const Text('Reorder', style: TextStyle(color: Colors.black)),
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              ),
-              child: const Text('Leave feedback',
-                  style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushNamed(context, '/home');
+          }
+          if (index == 1) {
+            Navigator.pushNamed(context, '/favorites');
+          }
+          if (index == 2) {
+            Navigator.pushNamed(context, '/my_bag');
+          }
+          if (index == 3) {
+            Navigator.pushNamed(context, '/profile');
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Favorites'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
@@ -102,7 +105,7 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(productData['category'],
-                      style: TextStyle(color: Colors.grey)),
+                      style: const TextStyle(color: Colors.grey)),
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
