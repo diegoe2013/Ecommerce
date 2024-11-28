@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:untitled/Controllers/auth.dart';
+import 'package:untitled/Controllers/databaseHelper.dart';
 import 'choose_account_type.dart';
 import 'welcome.dart';
 
@@ -141,6 +142,26 @@ class _CreateAccountState extends State<CreateAccount> {
                         errorText: 'El número es obligatorio',
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    FormBuilderDateTimePicker(
+                      name: 'birthDate',
+                      inputType: InputType.date,
+                      decoration: InputDecoration(
+                        hintText: 'Birthdate',
+                        fillColor: Colors.grey[200],
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      initialDate: DateTime(2000, 1, 1),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                      validator: FormBuilderValidators.required(
+                        errorText: 'La fecha de nacimiento es obligatoria',
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -174,6 +195,35 @@ class _CreateAccountState extends State<CreateAccount> {
                           ),
                         );
                       } else if (result != null) {
+
+                        final birthDate = formData?['birthDate'];
+                       
+                        //Datos para fireStore
+
+                        final userData = {
+                          "birthDate": birthDate,
+                          "createdAt": DateTime.now().toIso8601String(),
+                          "updatedAt": DateTime.now().toIso8601String(),
+                          "email": formData?['email'],
+                          "favorites": [],
+                          "id": result,
+                          "name": formData?['name'],
+                          "password": formData?['password'], 
+                          "paymentMethods": {},
+                          "phone": formData?['phone'],
+                          "profileImageUrl": "img.png",
+                          "settings": {
+                            "deliveryStatusChange": false,
+                            "newArrivals": false,
+                            "sales": false,
+                          },
+                          "userType": "user",
+                        };
+
+                        // Guardar en Firestore
+                        final dbHelper = DBHelper();
+                        await dbHelper.addData('users', userData);
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -181,6 +231,7 @@ class _CreateAccountState extends State<CreateAccount> {
                           ),
                         );
                       }
+                      
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
