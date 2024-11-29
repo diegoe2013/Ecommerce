@@ -48,7 +48,7 @@ class DBHelper {
     //   }
     // }
 
-  Future<String> autoIncrement(String path) async {
+  Future autoIncrement(String path) async {
     final collectionRef = FirebaseFirestore.instance.collection(path);
 
     // Ordenar por ID en orden descendente y limitar a 1

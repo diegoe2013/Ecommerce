@@ -31,10 +31,9 @@ class _PaymentMethods extends State<PaymentMethods> {
     getAutoIncrementIndex(); 
   }
 
-  Future<void> getAutoIncrementIndex() async {
+  void getAutoIncrementIndex() async {
     // autoincrement es parte de un future por lo que hay que correrlo dentro de una funcion con async
-    await dbHelper.autoIncrement('paymentMethods');
-    setState(() {});
+    autoincrementIndex = await dbHelper.autoIncrement('paymentMethods');
   }
 
   void updateSelectedCard(Map<String, dynamic> newCard) {
@@ -283,7 +282,7 @@ class _PaymentCard extends State<PaymentCard> {
                   ),
                 ),
                 Text(
-                  "** ** ** ${widget.paymentCard['cardNumber'].toString().substring(12)}",
+                  "**** **** **** ${widget.paymentCard['cardNumber'].toString().substring(12)}",
                   style: const TextStyle(
                       fontSize: 22, color: Colors.white, letterSpacing: 3),
                 ),
