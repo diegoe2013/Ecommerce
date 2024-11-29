@@ -14,7 +14,8 @@ class _PaymentMethods extends State<PaymentMethods> {
   final userId = "1";
   late List<Map<String, dynamic>> cardsMap;
   final DBHelper dbHelper = DBHelper();
-  late String autoincrementIndex;
+
+  late String autoincrementIndex ;
 
   int selectedCard = 0;
 
@@ -23,6 +24,18 @@ class _PaymentMethods extends State<PaymentMethods> {
   final TextEditingController _numberController = TextEditingController();
   final TextEditingController _expiryDateController = TextEditingController();
   final TextEditingController _typeController = TextEditingController();
+    
+  @override
+  void initState() {
+    super.initState();
+    getAutoIncrementIndex(); 
+  }
+
+  Future<void> getAutoIncrementIndex() async {
+    // autoincrement es parte de un future por lo que hay que correrlo dentro de una funcion con async
+    await dbHelper.autoIncrement('paymentMethods');
+    setState(() {});
+  }
 
   void updateSelectedCard(Map<String, dynamic> newCard) {
     setState(() {
@@ -102,7 +115,8 @@ class _PaymentMethods extends State<PaymentMethods> {
                           print(paymentCards);
 
                           cardsMap = paymentCards;
-                          autoincrementIndex = dbHelper.autoIncrement(cardsMap);
+                          getAutoIncrementIndex();
+                          // autoincrementIndex = await dbHelper.autoIncrement('paymentMethods');
 
                           return ListView.builder(
                             itemCount: paymentCards.length,
@@ -269,7 +283,7 @@ class _PaymentCard extends State<PaymentCard> {
                   ),
                 ),
                 Text(
-                  "**** **** **** ${widget.paymentCard['cardNumber'].toString().substring(12)}",
+                  "** ** ** ${widget.paymentCard['cardNumber'].toString().substring(12)}",
                   style: const TextStyle(
                       fontSize: 22, color: Colors.white, letterSpacing: 3),
                 ),

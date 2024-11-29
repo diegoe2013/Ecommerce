@@ -5,23 +5,65 @@ class DBHelper {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addData(String path, Map<String, dynamic> data) async {
-  DocumentReference docRef = FirebaseFirestore.instance.doc(path);
+    DocumentReference docRef = FirebaseFirestore.instance.doc(path);
 
-  await docRef.set(data); 
-}
+    await docRef.set(data); 
+  }
 
+  //funcion original comentada
+  // String autoIncrement(List<Map<String, dynamic>> data) {
+  //   int max = 0;
+  //   for (int i = 0; i < data.length; i++) {
+  //     int id = int.parse(data[i]['id']);
 
-  String autoIncrement(List<Map<String, dynamic>> data) {
-    int max = 0;
-    for (int i = 0; i < data.length; i++) {
-      int id = int.parse(data[i]['id']);
+  //     if (id > max) {
+  //       max = id;
+  //     }
+  //   }
 
-      if (id > max) {
-        max = id;
-      }
+  //   return (max + 1).toString();
+  // }
+
+    // Future<int> autoIncrement(String path) async {
+    //   final collectionRef = FirebaseFirestore.instance.collection(path);
+
+    //   // Ordenar por ID en orden descendente y limitar a 1. ahi tenemos el ultimo
+    //   final querySnapshot = await collectionRef
+    //       .orderBy('id', descending: true)
+    //       .limit(1)
+    //       .get();
+
+    //   // Si hay documentos, obtener el ID más alto, sino iniciar en 1
+    //   if (querySnapshot.docs.isNotEmpty) {
+    //     final lastId = querySnapshot.docs.first['id'];
+
+    //     // Convertir el ID a int por si es string en la base de datos
+    //     try {
+    //       return int.parse(lastId.toString()) + 1;
+    //     } catch (e) {
+    //       throw Exception("El valor de 'id' no es un entero válido: $lastId");
+    //     }
+    //   } else {
+    //     return 1; // Si no hay datos, comenzamos con 1
+    //   }
+    // }
+
+  Future<String> autoIncrement(String path) async {
+    final collectionRef = FirebaseFirestore.instance.collection(path);
+
+    // Ordenar por ID en orden descendente y limitar a 1
+    final querySnapshot = await collectionRef
+        .orderBy('id', descending: true)
+        .limit(1)
+        .get();
+
+    // Si hay documentos, obtener el ID más alto, sino iniciar en 1
+    if (querySnapshot.docs.isNotEmpty) {
+      final lastId = querySnapshot.docs.first['id'];
+      return (int.parse(lastId)  + 1).toString();
+    } else {
+      return 1.toString(); // Si no hay datos, comenzamos con 1
     }
-
-    return (max + 1).toString();
   }
 
   Future<void> deleteData(String path) async {

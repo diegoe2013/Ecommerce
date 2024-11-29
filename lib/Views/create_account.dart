@@ -17,8 +17,9 @@ class CreateAccount extends StatefulWidget {
 class _CreateAccountState extends State<CreateAccount> {
   final AUthService _auth = AUthService();
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
-
   bool obscureText = true; // Estado para mostrar/ocultar contraseña.
+  late String autoincrementIndex;
+  final dbHelper = DBHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -199,6 +200,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         final birthDate = formData?['birthDate'];
                        
                         //Datos para fireStore
+                        autoincrementIndex = await dbHelper.autoIncrement('users');
 
                         final userData = {
                           "birthDate": birthDate,
@@ -206,7 +208,8 @@ class _CreateAccountState extends State<CreateAccount> {
                           "updatedAt": DateTime.now().toIso8601String(),
                           "email": formData?['email'],
                           "favorites": [],
-                          "id": result,
+                          // "id": result,
+                          'id': autoincrementIndex,
                           "name": formData?['name'],
                           "password": formData?['password'], 
                           "paymentMethods": {},
@@ -221,8 +224,8 @@ class _CreateAccountState extends State<CreateAccount> {
                         };
 
                         // Guardar en Firestore
-                        final dbHelper = DBHelper();
-                        await dbHelper.addData('users', userData);
+                        
+                        await dbHelper.addData("users/$autoincrementIndex", userData);
 
                         Navigator.push(
                           context,
