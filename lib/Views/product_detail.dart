@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Controllers/apiService.dart';
 import 'package:untitled/Controllers/getData.dart';
+import 'write_review.dart';
 
 class ProductDetail extends StatefulWidget {
   final String productId;
-  // final List<Map<String, dynamic>> productsList;
   final List<dynamic> productList; 
 
   const ProductDetail({Key? key, required this.productId, required this.productList}) : super(key: key);
@@ -14,8 +15,12 @@ class ProductDetail extends StatefulWidget {
 }
 
 class _ProductDetailState extends State<ProductDetail> {
+  final DBHelper dbHelper = DBHelper();
   Map<String, dynamic>? product;
   bool isLoading = true;
+  List<Map<String, dynamic>> reviews = [];
+  double averageRating = 0.0;
+  bool isReviewsLoading = true;
 
   @override
   void initState() {
@@ -30,7 +35,8 @@ class _ProductDetailState extends State<ProductDetail> {
       final response = await getProductDetail(authToken, url); // Ensure this function exists
 
       setState(() {
-        product = response; // Assuming response is a Map
+        product = response;
+        print("Product: $product");
         isLoading = false;
       });
     } catch (e) {
@@ -133,14 +139,126 @@ class _ProductDetailState extends State<ProductDetail> {
                             ),
                           ),
                         ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Product Details...
+                            const SizedBox(height: 16),
+                            const Text(
+                              "Ratings & Reviews",
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                             dbHelper.getData(
+                                    path: "reviews",
+                                    columnFilter: 'productId',
+                                    filterValue: widget.productId.toString(),
+                                    itemBuilder: (reviews) {
+                                      print("Review: $reviews");
+                                      if (reviews.isEmpty) {
+                                        return const Text("No reviews available.");
+                                      }
+
+                                      double averageRating = 0;
+                                      for (var review in reviews) {
+                                        averageRating += review['rating'] ?? 0;
+                                      }
+                                      averageRating /= reviews.length;
+
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                "$averageRating",
+                                                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Display Star Ratings
+                                                  Row(
+                                                    children: List.generate(
+                                                      5,
+                                                      (index) => Icon(
+                                                        Icons.star,
+                                                        color: index < averageRating
+                                                            ? Colors.orange
+                                                            : Colors.grey.shade300,
+                                                        size: 24,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${reviews.length} reviews",
+                                                    style: const TextStyle(fontSize: 16),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const Divider(),
+                                          ...reviews.map((review) {
+                                            return ListTile(
+                                              leading: CircleAvatar(
+                                                backgroundImage: review['userImage'] != null
+                                                    ? NetworkImage(review['userImage'])
+                                                    : null,
+                                                child: review['userImage'] == null
+                                                    ? const Icon(Icons.person)
+                                                    : null,
+                                              ),
+                                              // title: Text(review['username']),
+                                              title: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: List.generate(
+                                                      5,
+                                                      (index) => Icon(
+                                                        Icons.star,
+                                                        color: index < review['rating']
+                                                            ? Colors.orange
+                                                            : Colors.grey.shade300,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(review['comment'] ?? 'No comment available'),
+                                                ],
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Navigate to Write Review screen
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WriteReview(productId: widget.productId, productList: widget.productList,),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                              child: const Text("Write a Review"),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 16),
                         // Top Offers Section
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 "You can also like this",
                                 style: TextStyle(
                                   fontSize: 22,

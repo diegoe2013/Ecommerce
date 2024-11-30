@@ -88,7 +88,7 @@ class DBHelper {
         } else if (snapshot.hasError) {
           return const Center(child: Text("Error loading orders"));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text("No orders found"));
+          return const Center(child: Text("No data found"));
         } else {
           return itemBuilder(snapshot.data!);
         }
