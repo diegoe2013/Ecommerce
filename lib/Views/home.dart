@@ -48,265 +48,265 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(
-      title: const Text("Categories"),
-      backgroundColor: Colors.orange,
-      elevation: 0,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.filter_alt),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => FilterSheet(
-                onApplyFilters: (filters) {
-                  setState(() {
-                    List<dynamic> products_filter = [];
-                    List<dynamic> new_products_filter = [];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Categories"),
+        backgroundColor: Colors.orange,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_alt),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => FilterSheet(
+                  onApplyFilters: (filters) {
+                    setState(() {
+                      List<dynamic> products_filter = [];
+                      List<dynamic> new_products_filter = [];
 
-                    for (Map<String, dynamic> product in productList){
-                      double price = double.parse(product['price']['value']);
-                      String title = product['title'];
-                      List<dynamic> categories = product['categories'];
+                      for (Map<String, dynamic> product in productList){
+                        double price = double.parse(product['price']['value']);
+                        String title = product['title'];
+                        List<dynamic> categories = product['categories'];
 
-                      String filterCategory = filters['category'];
-                      List<dynamic> filterColors = filters['colors'];
+                        String filterCategory = filters['category'];
+                        List<dynamic> filterColors = filters['colors'];
 
-                      if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
-                        products_filter.add(product);
-                        continue;
-                      }
+                        if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
+                          products_filter.add(product);
+                          continue;
+                        }
 
-                      if(filterColors.isNotEmpty){
-                        for (String color in filterColors){
-                          if(title.toLowerCase().contains(color.toString().toLowerCase())){
-                            products_filter.add(product);
-                            continue;
+                        if(filterColors.isNotEmpty){
+                          for (String color in filterColors){
+                            if(title.toLowerCase().contains(color.toString().toLowerCase())){
+                              products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+
+                        if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
+                          products_filter.add(product);
+                          continue;
+                        }
+
+                        if(categories.isNotEmpty && filterCategory.isNotEmpty){
+                          for (Map<String, dynamic> category in categories){
+                            if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
+                              products_filter.add(product);
+                              continue;
+                            }
                           }
                         }
                       }
+                      products = products_filter;
 
-                      if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
-                        products_filter.add(product);
-                        continue;
-                      }
+                      for (Map<String, dynamic> product in newProductList){
+                        double price = double.parse(product['price']['value']);
+                        String title = product['title'];
+                        List<dynamic> categories = product['categories'];
 
-                      if(categories.isNotEmpty && filterCategory.isNotEmpty){
-                        for (Map<String, dynamic> category in categories){
-                          if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
-                            products_filter.add(product);
-                            continue;
+                        String filterCategory = filters['category'];
+                        List<dynamic> filterColors = filters['colors'];
+
+                        if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
+                          new_products_filter.add(product);
+                          continue;
+                        }
+
+                        if(filterColors.isNotEmpty){
+                          for (String color in filterColors){
+                            if(title.toLowerCase().contains(color.toString().toLowerCase())){
+                              new_products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+
+                        if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
+                          new_products_filter.add(product);
+                          continue;
+                        }
+
+                        if(categories.isNotEmpty && filterCategory.isNotEmpty){
+                          for (Map<String, dynamic> category in categories){
+                            if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
+                              new_products_filter.add(product);
+                              continue;
+                            }
                           }
                         }
                       }
-                    }
-                    products = products_filter;
-
-                    for (Map<String, dynamic> product in newProductList){
-                      double price = double.parse(product['price']['value']);
-                      String title = product['title'];
-                      List<dynamic> categories = product['categories'];
-
-                      String filterCategory = filters['category'];
-                      List<dynamic> filterColors = filters['colors'];
-
-                      if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
-                        new_products_filter.add(product);
-                        continue;
-                      }
-
-                      if(filterColors.isNotEmpty){
-                        for (String color in filterColors){
-                          if(title.toLowerCase().contains(color.toString().toLowerCase())){
-                            new_products_filter.add(product);
-                            continue;
-                          }
-                        }
-                      }
-
-                      if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
-                        new_products_filter.add(product);
-                        continue;
-                      }
-
-                      if(categories.isNotEmpty && filterCategory.isNotEmpty){
-                        for (Map<String, dynamic> category in categories){
-                          if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
-                            new_products_filter.add(product);
-                            continue;
-                          }
-                        }
-                      }
-                    }
-                    newProducts = new_products_filter;
-                  });
-      
-                  Navigator.pop(context);
-                },
-              ),
-            );
-          },
-        ),
-      ],
-    ),
-    body: products.isEmpty
-        ? const Center(child: Text('No products available.'))
-        : Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ListView(
-              children: [
-                // Category buttons
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedCategory = 'clothes';
-                            fetchAndSetProducts(selectedCategory);
-                          });
-                        },
-                        child: const Text("Clothing"),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedCategory = 'books';
-                            fetchAndSetProducts(selectedCategory);
-                          });
-                        },
-                        child: const Text("Books"),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedCategory = 'electronics';
-                            fetchAndSetProducts(selectedCategory);
-                          });
-                        },
-                        child: const Text("Electronics"),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedCategory = 'home';
-                            fetchAndSetProducts(selectedCategory);
-                          });
-                        },
-                        child: const Text("Home"),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/categories');
-                        },
-                        child: const Text("View All"),
-                      ),
-                    ],
-                  ),
+                      newProducts = new_products_filter;
+                    });
+        
+                    Navigator.pop(context);
+                  },
                 ),
-                // Top Offers Section
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Top Offers",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Products section
-                SizedBox(
-                  height: 300,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: products.isEmpty ? 0 : products.length,
-                    itemBuilder: (context, index) {
-                      return ProductCard(product: products[index]);
-                    },
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "New",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // New products section
-                SizedBox(
-                  height: 300,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: newProducts.isEmpty ? 0 : newProducts.length,
-                    itemBuilder: (context, index) {
-                      return ProductCard(product: newProducts[index]);
-                    },
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
-    bottomNavigationBar: BottomNavigationBar(
-      currentIndex: 0,
-      onTap: (index) {
-        if (index == 1) {
-          Navigator.pushNamed(context, '/favorites');
-        }
-        if (index == 2) {
-          Navigator.pushNamed(context, '/my_bag');
-        }
-        if (index == 3) {
-          Navigator.pushNamed(context, '/profile');
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite),
-          label: 'Favorites',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_bag),
-          label: 'My Bag',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-      selectedItemColor: Colors.orange,
-      unselectedItemColor: Colors.grey,
-    ),
-  );
-}
+        ],
+      ),
+      body: products.isEmpty
+          ? const Center(child: Text('No products available.'))
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ListView(
+                children: [
+                  // Category buttons
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'clothes';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Clothing"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'books';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Books"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'electronics';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Electronics"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'home';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Home"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/categories');
+                          },
+                          child: const Text("View All"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Top Offers Section
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Top Offers",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Products section
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: products.isEmpty ? 0 : products.length,
+                      itemBuilder: (context, index) {
+                        return ProductCard(product: products[index]);
+                      },
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "New",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // New products section
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: newProducts.isEmpty ? 0 : newProducts.length,
+                      itemBuilder: (context, index) {
+                        return ProductCard(product: newProducts[index]);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.pushNamed(context, '/favorites');
+          }
+          if (index == 2) {
+            Navigator.pushNamed(context, '/my_bag');
+          }
+          if (index == 3) {
+            Navigator.pushNamed(context, '/profile');
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag),
+            label: 'My Bag',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.grey,
+      ),
+    );
+  }
 }
 
 class ProductCard extends StatelessWidget {
