@@ -20,7 +20,7 @@ class ProductDetail extends StatelessWidget {
             // Product Image
             Center(
               child: Image.network(
-                product['image'],
+                product['image']['imageUrl'],
                 height: 200,
                 width: 200,
                 fit: BoxFit.cover,
@@ -40,17 +40,17 @@ class ProductDetail extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '\$${product['price']}',
+                    '\$${product['price']['value']}',
                     style: const TextStyle(fontSize: 20, color: Color.fromARGB(134, 0, 0, 0), fontWeight: FontWeight.bold),
                   ),
                 ],
             ),
-            const SizedBox(height: 16),
-            // Product Description
-            Text(
-              product['description'],
-              style: const TextStyle(fontSize: 16),
-            ),
+            // const SizedBox(height: 16),
+            // // Product Description
+            // Text(
+            //   product['description'],
+            //   style: const TextStyle(fontSize: 16),
+            // ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

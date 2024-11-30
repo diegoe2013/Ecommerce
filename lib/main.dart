@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:untitled/Views/forgot_password.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // import 'Views/profile.dart';
 import 'Controllers/databaseHelper.dart';
@@ -21,6 +22,7 @@ import 'Views/favorites.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
   runApp(const MyApp());
 }

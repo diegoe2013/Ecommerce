@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'product_detail.dart';
+import 'package:untitled/Controllers/apiService.dart';
+import 'package:untitled/Controllers/getData.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,28 +11,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List products = [];
-  bool isLoading = true;
+  String token = '';
+  List<dynamic> products = [];
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    fetchAndSetProducts('clothes');
   }
 
-  Future<void> fetchProducts() async {
-    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
-    if (response.statusCode == 200) {
+  Future<void> fetchAndSetProducts(String keyword) async {
+    try {
+      final encodedKeyword = Uri.encodeQueryComponent(keyword);
+      // final url = 'https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=10'; //-> Sandbox Enviroment
+      final url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30'; // -> Production Enviroment
+
+      final authToken = await fetchToken();
+      final productList = await getData(authToken, url);
+
       setState(() {
-        products = json.decode(response.body);
-        isLoading = false;
+        token = authToken;
+        products = productList;
+        print('Products List: $productList');
       });
-    } else {
-      // Handle error
-      setState(() {
-        isLoading = false;
-      });
-      print("Product fetch failed.");
+    } catch (e) {
+      print('Error fetching products: $e');
     }
   }
 
@@ -45,13 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.orange,
         elevation: 0,
       ),
-      body: isLoading
+      body: products.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView(
                 children: [
-                  // Category section
+                  // Top Offers Section
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
@@ -67,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         TextButton(
                           onPressed: () {},
-                          child: const Text("All Products"),
+                          child: const Text("View all"),
                         ),
                       ],
                     ),
@@ -165,7 +168,7 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: NetworkImage(product['image']),
+                  image: NetworkImage(product['image']['imageUrl']),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -186,7 +189,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${product['price']}',
+                    '\$${product['price']['value']}',
                     style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 16,
