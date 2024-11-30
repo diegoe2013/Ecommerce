@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
 
@@ -6,7 +7,7 @@ class Category extends StatelessWidget {
     {"name": "Clothing", "image": "assets/images/Clothing.svg"},
     {"name": "Shoes", "image": "assets/images/Shoes.svg"},
     {"name": "Bags", "image": "assets/images/Bags.svg"},
-    {"name": "Lingerie", "image": "assets/images/Lingerie.svg"},
+    {"name": "Lingerie", "image": "assets/images/Lingeries.svg"},
     {"name": "Watch", "image": "assets/images/Watch.svg"},
     {"name": "Hoodies", "image": "assets/images/Hoodies.svg"},
   ];
@@ -82,7 +83,7 @@ class CategoryCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(10),
                 ),
-                child: Image.asset(
+                child: SvgPicture.asset(
                   image,
                   fit: BoxFit.cover,
                   width: double.infinity,

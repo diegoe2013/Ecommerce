@@ -26,7 +26,7 @@ class _ProductDetailState extends State<ProductDetail> {
       final authToken = await fetchToken();
       final url = 'https://api.ebay.com/buy/browse/v1/item/${widget.productId}';
       final response = await getProductDetail(authToken, url);
-      print("Response: $response");
+      
       setState(() {
         product = response; // Assuming response is a Map
         isLoading = false;
