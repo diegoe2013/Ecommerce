@@ -17,8 +17,7 @@ import 'Views/welcome.dart';
 import 'Views/my_bag.dart';
 import 'Views/settings.dart';
 import 'Views/favorites.dart';
-
-
+import 'Views/categories.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,9 +36,10 @@ class MyApp extends StatelessWidget {
       initialRoute: '/welcome',
       routes: {
         '/create_account': (context) =>  CreateAccount(),
-        '/home': (context) => const HomeScreen(),
         '/login': (context) =>  Login(),
         '/forgot_password': (context) =>  ForgotPassword(),
+        '/home': (context) => const HomeScreen(initialCategory: 'clothes'),
+        '/login': (context) => const Login(),
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
@@ -47,9 +47,7 @@ class MyApp extends StatelessWidget {
         '/settings': (context) =>  Settings(),
         '/favorites': (context) =>  const Favorites(),
         '/payment_methods': (context) =>  const PaymentMethods(),
-
-
-
+        '/categories': (context) => Category(),
       },
     );
   }

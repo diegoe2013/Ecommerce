@@ -19,12 +19,12 @@ class ProductDetail extends StatelessWidget {
           children: [
             // Product Image
             Center(
-              child: Image.network(
+              child: product['image'] != null && product['image']['imageUrl'] != null ? Image.network(
                 product['image']['imageUrl'],
                 height: 200,
                 width: 200,
                 fit: BoxFit.cover,
-              ),
+              ) : Text("No Image"),
             ),
             const SizedBox(height: 16),
             Row(

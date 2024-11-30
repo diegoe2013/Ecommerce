@@ -4,7 +4,9 @@ import 'package:untitled/Controllers/apiService.dart';
 import 'package:untitled/Controllers/getData.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String initialCategory;
+
+  const HomeScreen({super.key, required this.initialCategory});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -13,25 +15,30 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String token = '';
   List<dynamic> products = [];
+  List<dynamic> newProducts = [];
+  
+  String selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
-    fetchAndSetProducts('clothes');
+    selectedCategory = widget.initialCategory;
+    fetchAndSetProducts(selectedCategory);
   }
 
   Future<void> fetchAndSetProducts(String keyword) async {
     try {
       final encodedKeyword = Uri.encodeQueryComponent(keyword);
-      // final url = 'https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=10'; //-> Sandbox Enviroment
-      final url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30'; // -> Production Enviroment
-
+      final url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30';
+      final newUrl = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30&sort=newlyListed';
       final authToken = await fetchToken();
       final productList = await getData(authToken, url);
+      final newProductList = await getData(authToken, newUrl);
 
       setState(() {
         token = authToken;
         products = productList;
+        newProducts = newProductList;
         print('Products List: $productList');
       });
     } catch (e) {
@@ -54,9 +61,65 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView(
                 children: [
+                  // Category buttons
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'clothes';
+                              // widget.initialCategory = 'clothes';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Clothing"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'books';
+                              fetchAndSetProducts(selectedCategory);
+                              // selectedCategory = widget.initialCategory;
+                            });
+                          },
+                          child: const Text("Books"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'electronics';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Electronics"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'home';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Home"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/categories');
+                          },
+                          child: const Text("View All"),
+                        ),
+                      ],
+                    ),
+                  ),
                   // Top Offers Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -67,10 +130,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text("View all"),
                         ),
                       ],
                     ),
@@ -83,6 +142,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         return ProductCard(product: products[index]);
+                      },
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "New",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Products section
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        return ProductCard(product: newProducts[index]);
                       },
                     ),
                   ),
@@ -167,10 +253,10 @@ class ProductCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
+                image: product['image'] != null && product['image']['imageUrl'] != null ? DecorationImage(
                   image: NetworkImage(product['image']['imageUrl']),
                   fit: BoxFit.cover,
-                ),
+                ): null,
               ),
             ),
             Padding(
