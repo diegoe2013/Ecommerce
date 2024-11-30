@@ -237,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       itemCount: products.isEmpty ? 0 : products.length,
                       itemBuilder: (context, index) {
-                        return ProductCard(product: products[index]);
+                        return ProductCard(product: products[index], productList: products,);
                       },
                     ),
                   ),
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       itemCount: newProducts.isEmpty ? 0 : newProducts.length,
                       itemBuilder: (context, index) {
-                        return ProductCard(product: newProducts[index]);
+                        return ProductCard(product: newProducts[index], productList: newProducts,);
                       },
                     ),
                   ),
@@ -311,8 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class ProductCard extends StatelessWidget {
   final Map product;
+  final List<dynamic> productList; 
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({Key? key, required this.product, required this.productList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +322,10 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductDetail(productId: product['itemId']),
+            builder: (context) => ProductDetail(
+              productId: product['itemId'],
+              productList: productList,
+            ),
           ),
         );
       },
@@ -349,10 +353,12 @@ class ProductCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: product['image'] != null && product['image']['imageUrl'] != null ? DecorationImage(
-                  image: NetworkImage(product['image']['imageUrl']),
-                  fit: BoxFit.cover,
-                ): null,
+                image: product['image'] != null && product['image']['imageUrl'] != null
+                    ? DecorationImage(
+                        image: NetworkImage(product['image']['imageUrl']),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
             Padding(
