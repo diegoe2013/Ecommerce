@@ -39,7 +39,6 @@ class MyApp extends StatelessWidget {
         '/login': (context) =>  Login(),
         '/forgot_password': (context) =>  ForgotPassword(),
         '/home': (context) => const HomeScreen(initialCategory: 'clothes'),
-        '/login': (context) => const Login(),
         '/my_orders': (context) => const MyOrders(),
         '/profile': (context) => Profile(),
         '/welcome': (context) => const Welcome(),
