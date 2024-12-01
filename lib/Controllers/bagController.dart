@@ -17,22 +17,25 @@ class BagController {
   double get totalPrice => _totalPrice;
 
   // Fetch Bag for a user using DBHelper
-  Future<void> fetchBag(String bagId) async {
+  Future<void> fetchBag() async {
     try {
-      final path = 'bags/$bagId';
-      final bagData = await _dbHelper.fetchData(path, null, null);
+      _bagId = await _getOrCreateBag();
+      final path = 'bags/$_bagId';
+      final bagDoc = await FirebaseFirestore.instance.doc(path).get();
 
-      if (bagData.isNotEmpty) {
-        final bag = bagData.first;
-        _bagId = bagId;
-        _userId = bag['userId'];
-        _bagItems = (bag['items'] as List)
-            .map((item) => BagItem.fromJson(item))
-            .toList();
-        _totalPrice = bag['totalPrice'];
+      if (bagDoc.exists) {
+        final bagData = bagDoc.data();
+        if (bagData != null) {
+          _bagItems = (bagData['items'] as List<dynamic>)
+              .map((item) => BagItem.fromJson(item))
+              .toList();
+          _totalPrice = bagData['totalPrice'] ?? 0.0;
+        }
+      } else {
+        debugPrint('No bag found with ID: $bagId');
       }
     } catch (e) {
-      debugPrint('Error fetching bag: $e');
+      debugPrint('Error fetching bag items and total price: $e');
     }
   }
 
