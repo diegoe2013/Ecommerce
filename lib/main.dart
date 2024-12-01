@@ -31,13 +31,11 @@ void main() async {
   startServer();
 
   final user = FirebaseAuth.instance.currentUser;
-
-  // Define initialRoute dinámicamente
   runApp(MyApp(initialRoute: user == null ? '/welcome' : '/home'));
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute; // Declaración de la propiedad
+  final String initialRoute; 
 
   const MyApp({required this.initialRoute, Key? key}) : super(key: key);
 
@@ -45,7 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ecommerce App',
-      initialRoute: initialRoute, // Usa la ruta inicial proporcionada
+      initialRoute: initialRoute, 
       routes: {
         '/create_account': (context) =>  CreateAccount(),
         '/login': (context) =>  Login(),
@@ -63,5 +61,5 @@ class MyApp extends StatelessWidget {
         '/categories': (context) => Category(),
       },
     );
-  }
-}
+  }//widget build
+}//class myapp

@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AUthService {
+class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   Future<bool> isAuthenticated() async {
     final user = FirebaseAuth.instance.currentUser;
     return user != null; // Retorna true si hay un usuario autenticado
@@ -29,7 +29,7 @@ class AUthService {
     }
   } //create acount
 
-  Future signInEmailAndPassword(String email, String password) async {
+  Future<dynamic> signInEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -40,46 +40,50 @@ class AUthService {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
+        debugPrint('Error: Usuario no encontrado');
         return 1;
       } else if (e.code == 'wrong-password') {
+        debugPrint('Error: Contraseña incorrecta');
         return 2;
+      } else {
+        debugPrint('Error inesperado: ${e.code}');
+        return 3; 
       }
+    } catch (e) {
+      debugPrint('Error inesperado no manejado: $e');
+      return 4; // otros errores no relacionados con Firebase.
     }
   }
+
+
 
   Future passwordReset(BuildContext context, String email) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-        showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Text('password Reset Link sent, check your email'),
-          );
-        }
-      );
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('password Reset Link sent, check your email'),
+            );
+          });
     } on FirebaseAuthException catch (e) {
       print(e);
       showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Text(e.message.toString()),
-          );
-        }
-      );
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text(e.message.toString()),
+            );
+          });
     }
   }
-  
-  // Método para verificar si el usuario está autenticado
+
+  //  verificar si el usuario está autenticado
   User? get currentUser => _auth.currentUser;
 
   // Cerrar sesión
   Future<void> signOut() async {
     await _auth.signOut();
   }
-
-
-
-
 }

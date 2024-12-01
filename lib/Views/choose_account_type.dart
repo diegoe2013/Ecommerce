@@ -1,10 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/Views/create_account.dart';
+import 'create_account.dart';
 import 'login.dart';
-
 
 class ChooseAccountType extends StatelessWidget {
   const ChooseAccountType({super.key});
+
+  // Función para actualizar el campo userType del último usuario creado
+  Future<void> _updateUserType(String userType) async {
+    try {
+      // Referencia a la colección "users".
+      final collectionRef = FirebaseFirestore.instance.collection('users');
+
+      // Obtener el último usuario creado (ordenado por 'id' descendente y limitando a 1).
+      final querySnapshot = await collectionRef
+          .orderBy('id', descending: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first; // El primer documento en el resultado.
+        final userId = doc.id; // ID del documento.
+
+        // Actualizar el campo 'userType' del último usuario.
+        await collectionRef.doc(userId).update({'userType': userType});
+        debugPrint('Campo userType actualizado a "$userType" para el usuario con ID: $userId');
+      } else {
+        debugPrint('No se encontró ningún usuario.');
+      }
+    } catch (e) {
+      debugPrint('Error al actualizar userType: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +55,11 @@ class ChooseAccountType extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  await _updateUserType('seller'); // Actualiza a "seller".
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  Login()),
+                    MaterialPageRoute(builder: (context) => const Login()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -54,13 +82,9 @@ class ChooseAccountType extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => const Login()),
-                  // );
+                onPressed: () async {
+                  await _updateUserType('customer'); // Actualiza a "customer".
                   Navigator.pushNamed(context, '/login');
-
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
@@ -82,6 +106,7 @@ class ChooseAccountType extends StatelessWidget {
             Center(
               child: TextButton(
                 onPressed: () {
+                  //todo aqui ponle una funcion para que se le haga rollback al user
                   Navigator.pop(
                     context,
                     MaterialPageRoute(builder: (context) =>  CreateAccount()),
