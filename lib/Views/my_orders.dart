@@ -78,13 +78,27 @@ class _MyOrders extends State<MyOrders> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
+        onTap: (index) {
+          if(index == 0) {
+            Navigator.pushNamed(context, '/home');
+          }
+          if (index == 1) {
+            Navigator.pushNamed(context, '/favorites');
+          }
+          if (index == 2) {
+            Navigator.pushNamed(context, '/my_bag');
+          }
+          if(index == 3) {
+            Navigator.pushNamed(context, '/profile');
+          }
+        },
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorite'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -165,7 +179,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Details'), // The button text
+                  child: const Text('Details'), 
                 ),
                 Text(
                   order['shippingStatus'],

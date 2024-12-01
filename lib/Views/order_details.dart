@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/Controllers/databaseHelper.dart';
 
 class order_details extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -10,6 +11,8 @@ class order_details extends StatefulWidget {
 }
 
 class _order_details extends State<order_details> {
+  final DBHelper dbHelper = DBHelper();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +39,7 @@ class _order_details extends State<order_details> {
                 Text('Order ${widget.order['id']}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                  '10/10/10', //Text('${widget.order['createdAt'].toDate().day}/${widget.order['createdAt'].toDate().month}/${widget.order['createdAt'].toDate().year}',
+                  '${widget.order['createdAt'].toDate().day}/${widget.order['createdAt'].toDate().month}/${widget.order['createdAt'].toDate().year}',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -65,55 +68,11 @@ class _order_details extends State<order_details> {
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: widget.order['items'].length,
+                itemCount: widget.order['itemCount'],
                 itemBuilder: (context, index) {
-                  var item = widget.order['items'][index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Image.network(
-                            item['imageUrl'],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['name'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Color: ${item['color']}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                Text(
-                                  'Size: ${item['size']}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                Text(
-                                  'Units: ${item['units']}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            '\$${item['price']}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  var itemReference = widget.order['items'][index];
+                  var item = DBHelper().accessReference(itemReference);
+                  return ItemCard(data: item);
                 },
               ),
             ),
@@ -127,7 +86,7 @@ class _order_details extends State<order_details> {
             ),
             const SizedBox(height: 16),
             _buildOrderInfoRow('Shipping Address:',
-                '${widget.order['deliveryAdress']['street']}, ${widget.order['deliveryAdress']['city']}, ${widget.order['deliveryAdress']['state']}'),
+                '${widget.order['deliveryAddress']['street']}, ${widget.order['deliveryAddress']['city']}, ${widget.order['deliveryAddress']['country']}'),
             const SizedBox(height: 8),
             _buildPaymentMethodRow('Payment method:',
                 '**** **** **** ${widget.order['paymentMethod']['cardNumber'].toString().substring(12)}'),
@@ -223,4 +182,81 @@ Widget _buildPaymentMethodRow(String label, String value) {
           )),
     ],
   );
+}
+
+class ItemCard extends StatelessWidget {
+  final Future<Map<String, dynamic>?> data;
+
+  const ItemCard({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: data,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData) {
+          Map<String, dynamic> productData = snapshot.data!;
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(productData['name'],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(productData['category'],
+                      style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(children: [
+                        const Text('Color: ',
+                            style: TextStyle(color: Colors.grey)),
+                        Text(productData['attributes']['color'],
+                            style: const TextStyle(color: Colors.black)),
+                      ]),
+                      Row(children: [
+                        const Text('Material: ',
+                            style: TextStyle(color: Colors.grey)),
+                        Text(productData['attributes']['material'],
+                            style: const TextStyle(color: Colors.black)),
+                      ])
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(children: [
+                          const Text('Units: TEMP',
+                              style: TextStyle(color: Colors.grey)),
+                          Text(productData['price'].toString(),
+                              style: const TextStyle(color: Colors.black)),
+                        ]),
+                        Text('\$${productData['price']}',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                      ]),
+                ],
+              ),
+            ),
+          );
+        } else {
+          return const Text('No data found.');
+        }
+      },
+    );
+  }
 }
