@@ -212,10 +212,10 @@ class _CreateAccountState extends State<CreateAccount> {
                           "updatedAt": DateTime.now().toIso8601String(),
                           "email": formData?['email'],
                           "favorites": [],
-                          // "id": result,
-                          'id': autoincrementIndex,
+                          "id": result,
+                          // 'id': autoincrementIndex, 
                           "name": formData?['name'],
-                          "password": formData?['password'],
+                          // "password": formData?['password'], este dato esta de mas
                           "paymentMethods": {},
                           "phone": formData?['phone'],
                           "profileImageUrl": "img.png",
@@ -228,9 +228,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         };
 
                         // Guardar en Firestore
-
-                        await dbHelper.addData(
-                            "users/$autoincrementIndex", userData);
+                        await dbHelper.addData("users/$result", userData);
 
                         Navigator.push(
                           context,
