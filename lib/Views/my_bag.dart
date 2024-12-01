@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:untitled/Controllers/bagController.dart';
+import 'package:untitled/Models/bag_item.dart';
 
 class MyBag extends StatefulWidget {
   const MyBag({super.key});
@@ -10,28 +10,21 @@ class MyBag extends StatefulWidget {
 }
 
 class _MyBagState extends State<MyBag> {
-  List products = [];
+  final BagController _bagController = BagController();
   bool isLoading = true;
+  final String userId = "10"; // Replace with the logged user ID
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    _loadBagItems();
   }
 
-  Future<void> fetchProducts() async {
-    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
-    if (response.statusCode == 200) {
-      setState(() {
-        products = json.decode(response.body);
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      print("Failed to load products");
-    }
+  Future<void> _loadBagItems() async {
+    await _bagController.fetchBag(userId);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -55,24 +48,20 @@ class _MyBagState extends State<MyBag> {
           ),
         ],
       ),
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+        child: _bagController.bagItems.isEmpty
+            ? const Center(child: Text('Your bag is empty.'))
             : Column(
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: products.length,
+                itemCount: _bagController.bagItems.length,
                 itemBuilder: (context, index) {
-                  var product = products[index];
-                  return buildCartItem(
-                    product['title'],
-                    "Color Example",
-                    "Size Example",
-                    product['price'],
-                    product['image'],
-                  );
+                  final product = _bagController.bagItems[index];
+                  return buildCartItem(product);
                 },
               ),
             ),
@@ -100,54 +89,33 @@ class _MyBagState extends State<MyBag> {
               children: [
                 const Text('Total amount:', style: TextStyle(fontSize: 16)),
                 Text(
-                  '${calculateTotal()}\$',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  '${_bagController.totalPrice.toStringAsFixed(2)}\$',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                // Checkout logic
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text('Checkout', style: TextStyle(fontSize: 18)),
             ),
-            const SizedBox(height: 10),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushNamed(context, '/favorites');
-          }
-          if (index == 2) {
-            Navigator.pushNamed(context, '/my_bag');
-          } else if(index == 3) {
-            Navigator.pushNamed(context, '/profile');
-          } else if (index == 0) {
-            Navigator.pushNamed(context, '/home');
-          } 
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Cart'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
       ),
     );
   }
 
-  Widget buildCartItem(String title, String color, String size, double price, String imageUrl) {
+  Widget buildCartItem(BagItem product) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
@@ -158,7 +126,7 @@ class _MyBagState extends State<MyBag> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12.0),
               child: Image.network(
-                imageUrl,
+                product.imageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -170,12 +138,13 @@ class _MyBagState extends State<MyBag> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    product.title,
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('Color: $color', style: const TextStyle(color: Colors.grey)),
-                  Text('Size: $size', style: const TextStyle(color: Colors.grey)),
+                  Text('Condition: ${product.condition}',
+                      style: const TextStyle(color: Colors.grey)),
+                  Text('Brand: ${product.brand}', style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -185,25 +154,46 @@ class _MyBagState extends State<MyBag> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () {},
+                      onPressed: () {
+                        if (product.quantity > 1) {
+                          _bagController
+                              .updateItemQuantity(userId, product.id, product.quantity - 1)
+                              .then((_) => setState(() {}));
+                        }
+                      },
                     ),
-                    const Text('1', style: TextStyle(fontSize: 16)),
+                    Text('${product.quantity}', style: const TextStyle(fontSize: 16)),
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () {},
+                      onPressed: () {
+                        _bagController
+                            .updateItemQuantity(userId, product.id, product.quantity + 1)
+                            .then((_) => setState(() {}));
+                      },
                     ),
                   ],
                 ),
-                Text('$price\$', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('${product.price}\$', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            PopupMenuButton(
+              onSelected: (value) {
+                if (value == 'delete') {
+                  _bagController.removeItemFromBag(userId, product.id).then((_) {
+                    setState(() {});
+                  });
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Remove from bag'),
+                ),
               ],
             ),
           ],
         ),
       ),
     );
-  }
-
-  double calculateTotal() {
-    return products.fold(0, (sum, product) => sum + product['price']);
   }
 }
