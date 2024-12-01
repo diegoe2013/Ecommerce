@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
         ),
         
         '/categories': (context) => AuthGuard(
-          child: Profile(),
+          child: Category(),
         ),
       },
     );
