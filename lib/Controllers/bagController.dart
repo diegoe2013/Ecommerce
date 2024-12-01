@@ -3,6 +3,7 @@ import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Models/bag_item.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BagController {
   final DBHelper _dbHelper = DBHelper();
@@ -38,41 +39,57 @@ class BagController {
   // Add item to Bag
   Future<void> addItemToBag(BagItem item) async {
     try {
-      // Verify if a bag exists for the user
       _bagId = await _getOrCreateBag();
-      // Fetch the bag's existing data
       final path = 'bags/$_bagId';
+      final bagDoc = await FirebaseFirestore.instance.doc(path).get();
 
-      //  Check if the product is already in the bag
-      final existingProduct = _bagItems.indexWhere((bagItem) => bagItem.title == item.title);
-      if (existingProduct >= 0) {
-        // Increment quantity if the item already exists
-        _bagItems[existingProduct].quantity += item.quantity;
+      if (bagDoc.exists) {
+
+        final List<dynamic> currentItems = bagDoc.data()?['items'] ?? [];
+        bool itemUpdated = false;
+
+        for (var i = 0; i < currentItems.length; i++) {
+          if (currentItems[i]['title'] == item.title) {
+            currentItems[i]['quantity'] += item.quantity;
+            itemUpdated = true;
+            break;
+          }
+        }
+
+        if (!itemUpdated) {
+          currentItems.add(item.toJson());
+        }
+
+        final double updatedTotalPrice = currentItems.fold<double>(
+          0.0,
+              (sum, currentItem) =>
+          sum + (currentItem['price'] * currentItem['quantity']),
+        );
+
+        await FirebaseFirestore.instance.doc(path).update({
+          'items': currentItems,
+          'totalPrice': updatedTotalPrice,
+        });
+
+        _bagItems = currentItems.map((item) => BagItem.fromJson(item)).toList();
+        _totalPrice = updatedTotalPrice;
       } else {
-        _bagItems.add(item);
+        await _initializeBag(_userId, _bagId);
+        await addItemToBag(item);
       }
-
-      // Calculate the total price
-      _totalPrice += item.price * item.quantity;
-
-      // Save the updated bag to Firebase
-      final updatedBagData = {
-        'bagId': _bagId,
-        'userId': _userId,
-        'items': _bagItems.map((item) => item.toJson()).toList(),
-        'totalPrice': _totalPrice,
-      };
-
-      await _dbHelper.addData(path, updatedBagData);
     } catch (e) {
       debugPrint('Error adding item to bag: $e');
     }
   }
 
   // Remove item from Bag
-  Future<void> removeItemFromBag(String userId, String productId) async {
+  Future<void> removeItemFromBag(String productId) async {
     try {
-      _bagItems.removeWhere((item) => item.id == productId);
+      final existingIndex = _bagItems.indexWhere((bagItem) => bagItem.id == productId);
+      if (existingIndex >= 0) {
+        _bagItems.removeAt(existingIndex);
+      }
+
       _totalPrice = _bagItems.fold(0.0, (sum, item) => sum + item.price * item.quantity);
 
       final bagData = {
@@ -80,7 +97,7 @@ class BagController {
         'totalPrice': _totalPrice,
       };
 
-      await _dbHelper.updateData('bags/$userId', bagData);
+      await _dbHelper.updateData('bags/$_bagId', bagData);
     } catch (e) {
       debugPrint('Error removing item from bag: $e');
     }
