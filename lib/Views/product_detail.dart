@@ -8,7 +8,6 @@ import 'write_review.dart';
 
 class ProductDetail extends StatefulWidget {
   final String productId;
-  final userID = 10; // Replace with the logged user ID
   final List<dynamic> productList; 
 
   const ProductDetail({Key? key, required this.productId, required this.productList}) : super(key: key);
@@ -133,7 +132,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                 brand: product!['brand'] ?? 'No Brand',
                                 condition: product!['condition'] ?? 'No Condition',
                               );
-                              BagController().addItemToBag(widget.userID.toString(), bagItem);
+                              BagController().addItemToBag(bagItem);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,

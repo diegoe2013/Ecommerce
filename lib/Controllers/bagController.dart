@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Models/bag_item.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BagController {
   final DBHelper _dbHelper = DBHelper();
@@ -38,10 +39,17 @@ class BagController {
   }
 
   // Get or Create Bag for a user
-  Future<String> _getOrCreateBag(String userId) async {
+  Future<String> _getOrCreateBag() async {
     try {
+
       // Query Firestore to find a bag for the user
-      final bags = await _dbHelper.fetchData('bags', 'userId', userId);
+      _userId = await _getUserIdByEmail();
+
+      if (_userId.isEmpty) {
+        throw Exception('User ID not found for authenticated user');
+      }
+
+      final bags = await _dbHelper.fetchData('bags', 'userId', _userId);
 
       if (bags.isNotEmpty) {
         // If a bag exists, return its ID
@@ -49,7 +57,7 @@ class BagController {
       } else {
         // If no bag exists, create a new one
         final newBagId = const Uuid().v4();
-        await _initializeBag(userId, newBagId);
+        await _initializeBag(_userId, newBagId);
         return newBagId;
       }
     } catch (e) {
@@ -59,10 +67,10 @@ class BagController {
   }
 
   // Add item to Bag
-  Future<void> addItemToBag(String userId, BagItem item) async {
+  Future<void> addItemToBag(BagItem item) async {
     try {
       // Verify if a bag exists for the user
-      _bagId = await _getOrCreateBag(userId);
+      _bagId = await _getOrCreateBag();
       // Fetch the bag's existing data
       final path = 'bags/$_bagId';
       final bagData = await _dbHelper.fetchData(path, null, null);
@@ -89,7 +97,7 @@ class BagController {
       // Save the updated bag to Firebase
       final updatedBagData = {
         'bagId': _bagId,
-        'userId': userId,
+        'userId': _userId,
         'items': _bagItems.map((item) => item.toJson()).toList(),
         'totalPrice': _totalPrice,
       };
@@ -151,4 +159,30 @@ class BagController {
       debugPrint('Error initializing bag: $e');
     }
   }
+  // Method to get userId from email
+  Future<String> _getUserIdByEmail() async {
+    try {
+      // Get the email of the authenticated user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final userEmail = user.email!;
+      debugPrint('Authenticated User Email: $userEmail');
+
+      // Query the 'users' collection to find the user with the given email
+      final users = await _dbHelper.fetchData('users', 'email', userEmail);
+
+      if (users.isNotEmpty) {
+        return users.first['id'];
+      } else {
+        return '';
+      }
+    } catch (e) {
+      debugPrint('Error fetching userId by email: $e');
+      return '';
+    }
+  }
+
 }
