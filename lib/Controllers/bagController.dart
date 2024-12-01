@@ -38,39 +38,11 @@ class BagController {
     }
   }
 
-  // Get or Create Bag for a user
-  Future<String> _getOrCreateBag() async {
-    try {
-
-      // Query Firestore to find a bag for the user
-      _userId = await _getUserIdByEmail();
-
-      if (_userId.isEmpty) {
-        throw Exception('User ID not found for authenticated user');
-      }
-
-      final bags = await _dbHelper.fetchData('bags', 'userId', _userId);
-
-      if (bags.isNotEmpty) {
-        // If a bag exists, return its ID
-        return bags.first['bagId'];
-      } else {
-        // If no bag exists, create a new one
-        final newBagId = const Uuid().v4();
-        await _initializeBag(_userId, newBagId);
-        return newBagId;
-      }
-    } catch (e) {
-      debugPrint('Error getting or creating bag: $e');
-      return '';
-    }
-  }
-
   // Add item to Bag
   Future<void> addItemToBag(BagItem item) async {
     try {
       // Verify if a bag exists for the user
-      _bagId = await _getOrCreateBag();
+      _bagId = await _getOrCreateBag(item);
       // Fetch the bag's existing data
       final path = 'bags/$_bagId';
       final bagData = await _dbHelper.fetchData(path, null, null);
@@ -146,20 +118,48 @@ class BagController {
   }
 
   // Initialize a new Bag
-  Future<void> _initializeBag(String userId, String newBagId) async {
+  Future<void> _initializeBag(String userId, String newBagId, BagItem initialItem) async {
     try {
       final initialBagData = {
-        'bagId': _bagId,
+        'bagId': newBagId,
         'userId': userId,
-        'items': [],
-        'totalPrice': 0.0,
+        'items': [initialItem.toJson()],
+        'totalPrice': initialItem.price * initialItem.quantity,
       };
       await _dbHelper.addData('bags/$newBagId', initialBagData);
     } catch (e) {
       debugPrint('Error initializing bag: $e');
     }
   }
-  // Method to get userId from email
+
+  // Get or Create Bag for a user
+  Future<String> _getOrCreateBag(BagItem initialItem) async {
+    try {
+      // Query Firestore to find a bag for the user
+      _userId = await _getUserIdByEmail();
+
+      if (_userId.isEmpty) {
+        throw Exception('User ID not found for authenticated user');
+      }
+
+      final bags = await _dbHelper.fetchData('bags', 'userId', _userId);
+
+      if (bags.isNotEmpty) {
+        // If a bag exists, return its ID
+        return bags.first['bagId'];
+      } else {
+        // If no bag exists, create a new one
+        final newBagId = const Uuid().v4();
+        await _initializeBag(_userId, newBagId, initialItem);
+        return newBagId;
+      }
+    } catch (e) {
+      debugPrint('Error getting or creating bag: $e');
+      return '';
+    }
+  }
+
+  // Get userId from email
   Future<String> _getUserIdByEmail() async {
     try {
       // Get the email of the authenticated user
@@ -184,5 +184,4 @@ class BagController {
       return '';
     }
   }
-
 }
