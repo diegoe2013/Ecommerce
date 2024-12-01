@@ -45,20 +45,42 @@ class MyApp extends StatelessWidget {
       title: 'Ecommerce App',
       initialRoute: initialRoute, 
       routes: {
+        '/welcome': (context) => const Welcome(),
         '/create_account': (context) =>  CreateAccount(),
         '/login': (context) =>  Login(),
         '/forgot_password': (context) =>  ForgotPassword(),
-        '/home': (context) => const HomeScreen(initialCategory: 'clothes'),
-        '/my_orders': (context) => const MyOrders(),
+
+        '/home': (context) => const AuthGuard(
+          child: HomeScreen(initialCategory: 'clothes'),
+        ),
+
+        '/my_orders': (context) => const AuthGuard(
+          child:  MyOrders(),
+        ),
+
         '/profile': (context) => AuthGuard(
-              child: Profile(),
-            ),
-        '/welcome': (context) => const Welcome(),
-        '/my_bag': (context) => const MyBag(),
-        '/settings': (context) =>  Settings(),
-        '/favorites': (context) =>  const Favorites(),
-        '/payment_methods': (context) =>  const PaymentMethods(),
-        '/categories': (context) => Category(),
+          child: Profile(),
+        ),
+        
+        '/my_bag': (context) => const AuthGuard(
+          child:  MyBag(),
+        ),
+        
+        '/settings': (context) =>  AuthGuard(
+          child:  Settings(),
+        ),
+        
+        '/favorites': (context) => const AuthGuard(
+          child: Favorites(),
+        ),
+        
+        '/payment_methods': (context) => const AuthGuard(
+          child: PaymentMethods(),
+        ),
+        
+        '/categories': (context) => AuthGuard(
+          child: Profile(),
+        ),
       },
     );
   }//widget build
