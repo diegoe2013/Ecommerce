@@ -1,38 +1,50 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'product_detail.dart';
+import 'package:untitled/Controllers/apiService.dart';
+import 'package:untitled/Controllers/getData.dart';
+import 'package:flutter/gestures.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String initialCategory;
+
+  const HomeScreen({super.key, required this.initialCategory});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List products = [];
-  bool isLoading = true;
+  String token = '';
+  List<dynamic> products = [];
+  List<dynamic> newProducts = [];
+  var productList = [];
+  var newProductList = [];
+  
+  String selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    selectedCategory = widget.initialCategory;
+    fetchAndSetProducts(selectedCategory);
   }
 
-  Future<void> fetchProducts() async {
-    final response = await http.get(Uri.parse('https://fakestoreapi.com/products'));
-    if (response.statusCode == 200) {
+  Future<void> fetchAndSetProducts(String keyword) async {
+    try {
+      final encodedKeyword = Uri.encodeQueryComponent(keyword);
+      final url = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30';
+      final newUrl = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=$encodedKeyword&limit=30&sort=newlyListed';
+      final authToken = await fetchToken();
+      productList = await getData(authToken, url);
+      newProductList = await getData(authToken, newUrl);
+
       setState(() {
-        products = json.decode(response.body);
-        isLoading = false;
+        token = authToken;
+        products = productList;
+        newProducts = newProductList;
       });
-    } else {
-      // Handle error
-      setState(() {
-        isLoading = false;
-      });
-      print("Product fetch failed.");
+    } catch (e) {
+      print('Error fetching products: $e');
     }
   }
 
@@ -44,16 +56,166 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Categories"),
         backgroundColor: Colors.orange,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_alt),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => FilterSheet(
+                  onApplyFilters: (filters) {
+                    setState(() {
+                      List<dynamic> products_filter = [];
+                      List<dynamic> new_products_filter = [];
+
+                      for (Map<String, dynamic> product in productList){
+                        double price = double.parse(product['price']['value']);
+                        String title = product['title'];
+                        List<dynamic> categories = product['categories'];
+
+                        String filterCategory = filters['category'];
+                        List<dynamic> filterColors = filters['colors'];
+
+                        if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
+                          products_filter.add(product);
+                          continue;
+                        }
+
+                        if(filterColors.isNotEmpty){
+                          for (String color in filterColors){
+                            if(title.toLowerCase().contains(color.toString().toLowerCase())){
+                              products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+
+                        if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
+                          products_filter.add(product);
+                          continue;
+                        }
+
+                        if(categories.isNotEmpty && filterCategory.isNotEmpty){
+                          for (Map<String, dynamic> category in categories){
+                            if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
+                              products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+                      }
+                      products = products_filter;
+
+                      for (Map<String, dynamic> product in newProductList){
+                        double price = double.parse(product['price']['value']);
+                        String title = product['title'];
+                        List<dynamic> categories = product['categories'];
+
+                        String filterCategory = filters['category'];
+                        List<dynamic> filterColors = filters['colors'];
+
+                        if ((filters['minPrice'] != 0.0 || filters['maxPrice'] != 500.0) && (price >= filters['minPrice'] && price <= filters['maxPrice'])){
+                          new_products_filter.add(product);
+                          continue;
+                        }
+
+                        if(filterColors.isNotEmpty){
+                          for (String color in filterColors){
+                            if(title.toLowerCase().contains(color.toString().toLowerCase())){
+                              new_products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+
+                        if(filterCategory.isNotEmpty && title.toLowerCase().contains(filterCategory.toLowerCase())){
+                          new_products_filter.add(product);
+                          continue;
+                        }
+
+                        if(categories.isNotEmpty && filterCategory.isNotEmpty){
+                          for (Map<String, dynamic> category in categories){
+                            if(category['categoryName'].toString().toLowerCase().contains(filterCategory.toLowerCase())){
+                              new_products_filter.add(product);
+                              continue;
+                            }
+                          }
+                        }
+                      }
+                      newProducts = new_products_filter;
+                    });
+        
+                    Navigator.pop(context);
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+      body: products.isEmpty
+          ? const Center(child: Text('No products available.'))
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ListView(
                 children: [
-                  // Category section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  // Category buttons
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'clothes';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Clothing"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'books';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Books"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'electronics';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Electronics"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedCategory = 'home';
+                              fetchAndSetProducts(selectedCategory);
+                            });
+                          },
+                          child: const Text("Home"),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/categories');
+                          },
+                          child: const Text("View All"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Top Offers Section
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -65,10 +227,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.black87,
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text("All Products"),
-                        ),
                       ],
                     ),
                   ),
@@ -77,9 +235,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 300,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: products.length,
+                      itemCount: products.isEmpty ? 0 : products.length,
                       itemBuilder: (context, index) {
-                        return ProductCard(product: products[index]);
+                        return ProductCard(product: products[index], productList: products,);
+                      },
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "New",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // New products section
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: newProducts.isEmpty ? 0 : newProducts.length,
+                      itemBuilder: (context, index) {
+                        return ProductCard(product: newProducts[index], productList: newProducts,);
                       },
                     ),
                   ),
@@ -95,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
           }
-          if(index == 3) {
+          if (index == 3) {
             Navigator.pushNamed(context, '/profile');
           }
         },
@@ -126,8 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class ProductCard extends StatelessWidget {
   final Map product;
+  final List<dynamic> productList; 
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({Key? key, required this.product, required this.productList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +322,10 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductDetail(product: product),
+            builder: (context) => ProductDetail(
+              productId: product['itemId'],
+              productList: productList,
+            ),
           ),
         );
       },
@@ -164,10 +353,12 @@ class ProductCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(product['image']),
-                  fit: BoxFit.cover,
-                ),
+                image: product['image'] != null && product['image']['imageUrl'] != null
+                    ? DecorationImage(
+                        image: NetworkImage(product['image']['imageUrl']),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
             Padding(
@@ -186,7 +377,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${product['price']}',
+                    '\$${product['price']['value']}',
                     style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 16,
@@ -197,6 +388,129 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class FilterSheet extends StatefulWidget {
+  final Function(Map<String, dynamic>) onApplyFilters;
+
+  const FilterSheet({Key? key, required this.onApplyFilters}) : super(key: key);
+
+  @override
+  State<FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<FilterSheet> {
+  double minPrice = 0;
+  double maxPrice = 500;
+  List<String> selectedColors = [];
+  String selectedCategory = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
+      ),
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8, // Max 80% height
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Filters",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              // Price Range Filter
+              const Text("Price range"),
+              RangeSlider(
+                values: RangeValues(minPrice, maxPrice),
+                min: 0,
+                max: 500,
+                divisions: 10,
+                labels: RangeLabels(
+                  '\$${minPrice.toInt()}',
+                  '\$${maxPrice.toInt()}',
+                ),
+                onChanged: (RangeValues values) {
+                  setState(() {
+                    minPrice = values.start;
+                    maxPrice = values.end;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              // Colors Filter
+              const Text("Colors"),
+              Wrap(
+                spacing: 8.0,
+                children: ['Black', 'White', 'Red', 'Blue', 'Green']
+                    .map((color) => FilterChip(
+                          label: Text(color),
+                          selected: selectedColors.contains(color),
+                          onSelected: (isSelected) {
+                            setState(() {
+                              isSelected
+                                  ? selectedColors.add(color)
+                                  : selectedColors.remove(color);
+                            });
+                          },
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+              // Category Filter
+              const Text("Category"),
+              Wrap(
+                spacing: 8.0,
+                children: ['All', 'Women', 'Men', 'Boys', 'Girls']
+                    .map((category) => ChoiceChip(
+                          label: Text(category),
+                          selected: selectedCategory == category,
+                          onSelected: (isSelected) {
+                            setState(() {
+                              selectedCategory = isSelected ? category : '';
+                            });
+                          },
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+              // Apply and Discard Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close without applying filters
+                    },
+                    child: const Text("Discard"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.onApplyFilters({
+                        'minPrice': minPrice,
+                        'maxPrice': maxPrice,
+                        'colors': selectedColors,
+                        'category': selectedCategory,
+                      });
+                    },
+                    child: const Text("Apply"),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
