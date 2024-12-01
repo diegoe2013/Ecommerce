@@ -12,10 +12,7 @@ class BagController {
   double _totalPrice = 0.0;
 
   String get bagId => _bagId;
-  // Getter for Bag Items
   List<BagItem> get bagItems => List.unmodifiable(_bagItems);
-
-  // Getter for Total Price
   double get totalPrice => _totalPrice;
 
   // Fetch Bag for a user using DBHelper
@@ -42,29 +39,21 @@ class BagController {
   Future<void> addItemToBag(BagItem item) async {
     try {
       // Verify if a bag exists for the user
-      _bagId = await _getOrCreateBag(item);
+      _bagId = await _getOrCreateBag();
       // Fetch the bag's existing data
       final path = 'bags/$_bagId';
-      final bagData = await _dbHelper.fetchData(path, null, null);
-
-      if (bagData.isNotEmpty) {
-        // If the bag exists, update items and total price
-        _bagItems = (bagData.first['items'] as List).map((item) => BagItem.fromJson(item)).toList();
-        _totalPrice = bagData.first['totalPrice'];
-      }
 
       //  Check if the product is already in the bag
-      final existingIndex = _bagItems.indexWhere((bagItem) => bagItem.id == item.id);
-      if (existingIndex >= 0) {
+      final existingProduct = _bagItems.indexWhere((bagItem) => bagItem.title == item.title);
+      if (existingProduct >= 0) {
         // Increment quantity if the item already exists
-        _bagItems[existingIndex].quantity += item.quantity;
+        _bagItems[existingProduct].quantity += item.quantity;
       } else {
-        // Add the new product
         _bagItems.add(item);
       }
 
-      // Calculate the new total price
-      _totalPrice = _bagItems.fold(0.0, (sum, item) => sum + item.price * item.quantity);
+      // Calculate the total price
+      _totalPrice += item.price * item.quantity;
 
       // Save the updated bag to Firebase
       final updatedBagData = {
@@ -117,23 +106,8 @@ class BagController {
     }
   }
 
-  // Initialize a new Bag
-  Future<void> _initializeBag(String userId, String newBagId, BagItem initialItem) async {
-    try {
-      final initialBagData = {
-        'bagId': newBagId,
-        'userId': userId,
-        'items': [initialItem.toJson()],
-        'totalPrice': initialItem.price * initialItem.quantity,
-      };
-      await _dbHelper.addData('bags/$newBagId', initialBagData);
-    } catch (e) {
-      debugPrint('Error initializing bag: $e');
-    }
-  }
-
   // Get or Create Bag for a user
-  Future<String> _getOrCreateBag(BagItem initialItem) async {
+  Future<String> _getOrCreateBag() async {
     try {
       // Query Firestore to find a bag for the user
       _userId = await _getUserIdByEmail();
@@ -150,12 +124,27 @@ class BagController {
       } else {
         // If no bag exists, create a new one
         final newBagId = const Uuid().v4();
-        await _initializeBag(_userId, newBagId, initialItem);
+        await _initializeBag(_userId, newBagId);
         return newBagId;
       }
     } catch (e) {
       debugPrint('Error getting or creating bag: $e');
       return '';
+    }
+  }
+
+  // Initialize a new Bag
+  Future<void> _initializeBag(String userId, String newBagId) async {
+    try {
+      final initialBagData = {
+        'bagId': newBagId,
+        'userId': userId,
+        'items': [],
+        'totalPrice': 0.00,
+      };
+      await _dbHelper.addData('bags/$newBagId', initialBagData);
+    } catch (e) {
+      debugPrint('Error initializing bag: $e');
     }
   }
 
