@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/checkoutController.dart';
+import 'package:untitled/Views/payment_methods.dart';
+//import 'package:untitled/Views/shipping_address.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final double totalPrice;
@@ -116,7 +118,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       '${shippingAddress['country'] ?? 'No country'}',
                 ),
                 trailing: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                  //   Navigator.push(context, MaterialPageRoute(builder: (context) => const ShippingAddress()),
+                  // );
+                    },
                   child: const Text(
                     'Change',
                     style: TextStyle(color: Colors.orange),
@@ -145,7 +150,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 subtitle: Text(paymentMethods['holderName'] ?? 'No holder'),
                 trailing: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethods()),
+                  );
+                    },
                   child: const Text(
                     'Change',
                     style: TextStyle(color: Colors.orange),
@@ -163,20 +171,68 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 10),
             isLoadingDeliveryMethods
                 ? const Center(child: CircularProgressIndicator())
-                : Column(
-              children: deliveryMethods
-                  .map((method) => RadioListTile<Map<String, dynamic>>(
-                value: method,
-                groupValue: selectedDeliveryMethod,
-                onChanged: (value) {
-                  setState(() {
-                    selectedDeliveryMethod = value;
-                  });
-                },
-                title: Text(method['provider']),
-                subtitle: Text('Daily fee: \$${method['dailyFee']}'),
-              ))
-                  .toList(),
+                : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: deliveryMethods.map((method) {
+                final isSelected = selectedDeliveryMethod == method;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedDeliveryMethod = method;
+                    });
+                  },
+                  child: Container(
+                    width: 100,
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.orange.shade100 : Colors.white,
+                      border: Border.all(
+                        color: isSelected ? Colors.orange : Colors.grey.shade300,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          method['provider'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          '${deliveryDays} days',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Daily Fee: \$${method['dailyFee']}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 30),
 
@@ -200,6 +256,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const Text('Delivery:', style: TextStyle(color: Colors.grey)),
                 Text('\$${deliveryFee.toStringAsFixed(2)}'),
               ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: Text(
+                'Delivery cost = shipping days × daily provider fee.',
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
             ),
             const Divider(height: 20, thickness: 1),
             Row(
