@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/favoritesController.dart';
+import 'package:untitled/Controllers/bagController.dart';
 import 'package:untitled/Models/favorite_item.dart';
+import 'package:untitled/Models/bag_item.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -11,6 +13,7 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   final FavoritesController favoritesController = FavoritesController();
+  final BagController bagController = BagController();
   List<FavoriteItem> favoriteItems = [];
   bool isLoading = true;
 
@@ -31,6 +34,21 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Future<void> _removeFavorite(String id) async {
     await favoritesController.removeFavorite(id);
     await _loadFavorites();
+  }
+
+  Future<void> _addToBag(FavoriteItem item) async {
+    final bagItem = BagItem(
+      title: item.title,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      shortDescription: item.description ?? 'No Description',
+      brand: item.brand ?? 'No Brand',
+      condition: 'New',
+    );
+    await bagController.addItemToBag(bagItem);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${item.title} added to bag!')),
+    );
   }
 
   Widget buildFavoriteItem(FavoriteItem item) {
@@ -59,9 +77,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             Text('\$${item.price.toStringAsFixed(2)}'),
           ],
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () => _removeFavorite(item.id),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.shopping_bag, color: Colors.orange),
+              onPressed: () => _addToBag(item),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _removeFavorite(item.id),
+            ),
+          ],
         ),
       ),
     );
