@@ -20,6 +20,7 @@ import 'Views/my_bag.dart';
 import 'Views/settings.dart';
 import 'Views/favorites.dart';
 import 'Views/categories.dart';
+import 'Views/my_orders.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
