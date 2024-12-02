@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Controllers/apiService.dart';
 import 'package:untitled/Controllers/getData.dart';
+import 'package:untitled/Controllers/bagController.dart';
+import 'package:untitled/Models/bag_item.dart';
 import 'write_review.dart';
 
 class ProductDetail extends StatefulWidget {
@@ -121,7 +123,16 @@ class _ProductDetailState extends State<ProductDetail> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Logic to add product in the bag here
+                              // Add product to bag
+                              final bagItem = BagItem(
+                                title: product!['title'],
+                                price: double.tryParse(product!['price']['value'].toString()) ?? 0.0,
+                                imageUrl: product! ['image']['imageUrl'],
+                                shortDescription: product! ['shortDescription'] ?? 'No Description',
+                                brand: product!['brand'] ?? 'No Brand',
+                                condition: product!['condition'] ?? 'No Condition',
+                              );
+                              BagController().addItemToBag(bagItem);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
