@@ -22,6 +22,7 @@ import 'Views/settings.dart';
 import 'Views/favorites.dart';
 import 'Views/categories.dart';
 import 'Controllers/auth_guard.dart';
+import 'Views/my_orders.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

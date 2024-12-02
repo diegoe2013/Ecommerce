@@ -1,12 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Controllers/auth.dart';
+import 'package:untitled/Views/create_account.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/settings.dart';
+import 'package:untitled/Views/shippingAddress.dart';
 
 class Profile extends StatelessWidget {
-  final userId = "1";
+  final user = FirebaseAuth.instance.currentUser;
+  String userId = '0';
   final DBHelper dbHelper = DBHelper();
   final AuthService _auth = AuthService();
 
@@ -14,6 +18,14 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      Navigator.pop(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateAccount(),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -36,19 +48,16 @@ class Profile extends StatelessWidget {
       body: SingleChildScrollView(
         child: dbHelper.getData(
           path: 'users',
-          columnFilter: 'id',
-          filterValue: userId.toString(),
-          // filterValue: null,
+          columnFilter: 'email',
+          filterValue: user!.email,
           itemBuilder: (users) {
             var user = users[0];
-
-            return Expanded(
-              child: dbHelper.getData(
-                path: 'orders',
-                columnFilter: null,
-                filterValue: null,
-                itemBuilder: (orders) {
-                  return Column(
+            userId = user['id'];
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -154,9 +163,61 @@ class Profile extends StatelessWidget {
                         },
                       ),
                     ],
-                  );
-                },
-              ),
+                  ),
+                ),
+                const Divider(),
+                ProfileOption(
+                  title: 'My orders',
+                  subtitle: 'Your orders',
+                  icon: Icons.chevron_right,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyOrders()),
+                    );
+                  },
+                ),
+                const Divider(),
+                ProfileOption(
+                  title: 'Shipping addresses',
+                  subtitle: 'Delivery addresses',
+                  icon: Icons.chevron_right,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ShippingAddress()),
+                    );
+                  },
+                ),
+                const Divider(),
+                ProfileOption(
+                  title: 'Payment methods',
+                  subtitle: user['paymentMethods']['cardNumber'] == null
+                      ? 'No cards'
+                      : '${user['paymentMethods']['type']} **${user['paymentMethods']['cardNumber'].toString().substring(14)}',
+                  icon: Icons.chevron_right,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PaymentMethods()),
+                    );
+                  },
+                ),
+                const Divider(),
+                ProfileOption(
+                  title: 'Settings',
+                  subtitle: 'Notifications, password',
+                  icon: Icons.chevron_right,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Settings()),
+                    );
+                  },
+                ),
+              ],
             );
           },
         ),
