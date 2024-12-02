@@ -16,7 +16,7 @@ class BagController {
   List<BagItem> get bagItems => List.unmodifiable(_bagItems);
   double get totalPrice => _totalPrice;
 
-  // Fetch Bag for a user using DBHelper
+  // Fetch Bag for a user (list of items on the bag and total price)
   Future<void> fetchBag() async {
     try {
       _bagId = await _getOrCreateBag();
@@ -85,45 +85,49 @@ class BagController {
     }
   }
 
-  // Remove item from Bag
-  Future<void> removeItemFromBag(String productId) async {
-    try {
-      final existingIndex = _bagItems.indexWhere((bagItem) => bagItem.id == productId);
-      if (existingIndex >= 0) {
-        _bagItems.removeAt(existingIndex);
-      }
+  // Update item quantity
+  Future<void> updateItemQuantity(String productId, int newQuantity) async {
+    if (newQuantity < 1) {
+      debugPrint('Quantity cannot be less than 1');
+      return;
+    }
 
-      _totalPrice = _bagItems.fold(0.0, (sum, item) => sum + item.price * item.quantity);
+    final existingIndex = _bagItems.indexWhere((item) => item.id == productId);
 
+    if (existingIndex != -1) {
+      _bagItems[existingIndex].quantity = newQuantity;
+
+      // New price
+      _totalPrice = _bagItems.fold(
+        0.0,
+            (sum, item) => sum + (item.price * item.quantity),
+      );
+
+      // Update database
       final bagData = {
         'items': _bagItems.map((item) => item.toJson()).toList(),
         'totalPrice': _totalPrice,
       };
-
       await _dbHelper.updateData('bags/$_bagId', bagData);
-    } catch (e) {
-      debugPrint('Error removing item from bag: $e');
     }
   }
-  // Update item quantity
-  Future<void> updateItemQuantity(String userId, String productId, int quantity) async {
-    try {
-      final existingIndex = _bagItems.indexWhere((bagItem) => bagItem.id == productId);
-      if (existingIndex >= 0) {
-        _bagItems[existingIndex].quantity = quantity;
-      }
 
-      _totalPrice = _bagItems.fold(0.0, (sum, item) => sum + item.price * item.quantity);
+  // Remove item from Bag
+  Future<void> removeItemFromBag(String productId) async {
+    _bagItems.removeWhere((item) => item.id == productId);
 
-      final bagData = {
-        'items': _bagItems.map((item) => item.toJson()).toList(),
-        'totalPrice': _totalPrice,
-      };
+    // New price
+    _totalPrice = _bagItems.fold(
+      0.0,
+          (sum, item) => sum + (item.price * item.quantity),
+    );
 
-      await _dbHelper.updateData('bags/$userId', bagData);
-    } catch (e) {
-      debugPrint('Error updating item quantity: $e');
-    }
+    // Update database
+    final bagData = {
+      'items': _bagItems.map((item) => item.toJson()).toList(),
+      'totalPrice': _totalPrice,
+    };
+    await _dbHelper.updateData('bags/$_bagId', bagData);
   }
 
   // Get or Create Bag for a user

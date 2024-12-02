@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
 import 'package:untitled/Controllers/bagController.dart';
 import 'package:untitled/Models/bag_item.dart';
 
@@ -59,14 +57,8 @@ class _MyBagState extends State<MyBag> {
               child: ListView.builder(
                 itemCount: bagController.bagItems.length,
                 itemBuilder: (context, index) {
-                  final product = bagController.bagItems[index];
-                  return buildCartItem(
-                    product.title,
-                    "Color Example", // Placeholder para color
-                    "Size Example",  // Placeholder para tamaño
-                    product.price,
-                    product.imageUrl,
-                  );
+                  final BagItem product = bagController.bagItems[index];
+                  return buildCartItem(product);
                 },
               ),
             ),
@@ -141,7 +133,7 @@ class _MyBagState extends State<MyBag> {
     );
   }
 
-  Widget buildCartItem(String title, String color, String size, double price, String imageUrl) {
+  Widget buildCartItem(BagItem product) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
@@ -152,7 +144,7 @@ class _MyBagState extends State<MyBag> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12.0),
               child: Image.network(
-                imageUrl,
+                product.imageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -164,12 +156,12 @@ class _MyBagState extends State<MyBag> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    product.title,
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('Color: $color', style: const TextStyle(color: Colors.grey)),
-                  Text('Size: $size', style: const TextStyle(color: Colors.grey)),
+                  Text('Color: Example Color', style: const TextStyle(color: Colors.grey)),
+                  Text('Size: Example Size', style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -178,18 +170,45 @@ class _MyBagState extends State<MyBag> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () {},
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: product.quantity > 1 ? Colors.orange : Colors.grey,
+                      ),
+                      onPressed: product.quantity > 1
+                          ? () async {
+                        await bagController.updateItemQuantity(
+                          product.id,
+                          product.quantity - 1,
+                        );
+                        setState(() {});
+                      }
+                          : null,
                     ),
-                    const Text('1', style: TextStyle(fontSize: 16)), // Cantidad del producto
+                    Text(
+                      '${product.quantity}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () {},
+                      icon: const Icon(Icons.add_circle_outline, color: Colors.orange),
+                      onPressed: () async {
+                        await bagController.updateItemQuantity(
+                          product.id,
+                          product.quantity + 1,
+                        );
+                        setState(() {});
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        await bagController.removeItemFromBag(product.id);
+                        setState(() {});
+                      },
                     ),
                   ],
                 ),
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  '\$${product.price.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
