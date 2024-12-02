@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
+import 'package:untitled/Views/create_account.dart';
 import 'package:untitled/Views/order_details.dart';
 
 class MyOrders extends StatefulWidget {
@@ -12,6 +14,8 @@ class MyOrders extends StatefulWidget {
 class _MyOrders extends State<MyOrders> {
   final DBHelper dbHelper = DBHelper();
   String selectedStatus = "Delivered";
+  final user = FirebaseAuth.instance.currentUser;
+  String userId = '0';
 
   void updateSelectedStatus(String status) {
     setState(() {
@@ -21,6 +25,14 @@ class _MyOrders extends State<MyOrders> {
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      Navigator.pop(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateAccount(),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Orders'),
@@ -34,52 +46,66 @@ class _MyOrders extends State<MyOrders> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                OrderTabButton(
-                  label: 'Delivered',
-                  isSelected: selectedStatus == 'Delivered',
-                  onPressed: () => updateSelectedStatus('Delivered'),
+      body: dbHelper.getData(
+        path: 'users',
+        columnFilter: "email",
+        filterValue: user!.email,
+        itemBuilder: (users) {
+          final user = users[0];
+          userId = user['id'];
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    OrderTabButton(
+                      label: 'Delivered',
+                      isSelected: selectedStatus == 'Delivered',
+                      onPressed: () => updateSelectedStatus('Delivered'),
+                    ),
+                    OrderTabButton(
+                      label: 'Processing',
+                      isSelected: selectedStatus == 'Processing',
+                      onPressed: () => updateSelectedStatus('Processing'),
+                    ),
+                    OrderTabButton(
+                      label: 'Canceled',
+                      isSelected: selectedStatus == 'Canceled',
+                      onPressed: () => updateSelectedStatus('Canceled'),
+                    ),
+                  ],
                 ),
-                OrderTabButton(
-                  label: 'Processing',
-                  isSelected: selectedStatus == 'Processing',
-                  onPressed: () => updateSelectedStatus('Processing'),
-                ),
-                OrderTabButton(
-                  label: 'Canceled',
-                  isSelected: selectedStatus == 'Canceled',
-                  onPressed: () => updateSelectedStatus('Canceled'),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: dbHelper.getData(
-                path: 'orders',
-                columnFilter: 'shippingStatus',
-                filterValue: selectedStatus,
-                itemBuilder: (orders) {
-                  return ListView.builder(
-                    itemCount: orders.length,
-                    itemBuilder: (context, index) {
-                      var order = orders[index];
-                      return OrderCard(order: order);
-                    },
-                  );
-                }),
-          ),
-        ],
+              ),
+              Expanded(
+                child: dbHelper.getData(
+                    path: 'orders',
+                    columnFilter: 'shippingStatus',
+                    filterValue: selectedStatus,
+                    itemBuilder: (orders) {
+                      return ListView.builder(
+                        itemCount: orders.length,
+                        itemBuilder: (context, index) {
+                          var order = orders[index];
+                          print("ORDER");
+                          print(order);
+                          if (order['userId'] != userId) {
+                            return const Center(child: Text("No data found"));
+                          }
+                          return OrderCard(order: order);
+                        },
+                      );
+                    }),
+              ),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
         onTap: (index) {
-          if(index == 0) {
+          if (index == 0) {
             Navigator.pushNamed(context, '/home');
           }
           if (index == 1) {
@@ -88,7 +114,7 @@ class _MyOrders extends State<MyOrders> {
           if (index == 2) {
             Navigator.pushNamed(context, '/my_bag');
           }
-          if(index == 3) {
+          if (index == 3) {
             Navigator.pushNamed(context, '/profile');
           }
         },
@@ -96,8 +122,10 @@ class _MyOrders extends State<MyOrders> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorite'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Cart'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Favorite'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -112,9 +140,9 @@ class OrderTabButton extends StatelessWidget {
 
   const OrderTabButton(
       {super.key,
-      required this.label,
-      required this.isSelected,
-      required this.onPressed});
+        required this.label,
+        required this.isSelected,
+        required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +207,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Details'), 
+                  child: const Text('Details'),
                 ),
                 Text(
                   order['shippingStatus'],
@@ -187,8 +215,8 @@ class OrderCard extends StatelessWidget {
                       color: order['shippingStatus'] == "Delivered"
                           ? Colors.green
                           : order['shippingStatus'] == "Processing"
-                              ? Colors.amber[800]
-                              : Colors.red),
+                          ? Colors.amber[800]
+                          : Colors.red),
                 ),
               ],
             ),

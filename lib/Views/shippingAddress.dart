@@ -5,28 +5,27 @@ import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:untitled/Views/create_account.dart';
 
-class PaymentMethods extends StatefulWidget {
-  const PaymentMethods({super.key});
+class ShippingAddress extends StatefulWidget {
+  const ShippingAddress({super.key});
 
   @override
-  _PaymentMethods createState() => _PaymentMethods();
+  _ShippingAddress createState() => _ShippingAddress();
 }
 
-class _PaymentMethods extends State<PaymentMethods> {
+class _ShippingAddress extends State<ShippingAddress> {
   final user = FirebaseAuth.instance.currentUser;
-  String userId = "1";
-  late List<Map<String, dynamic>> cardsMap;
+  String userId = "0";
   final DBHelper dbHelper = DBHelper();
 
   late String autoincrementIndex;
 
-  int selectedCard = 0;
+  int selectedAddress = 0;
 
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _streetController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _numberController = TextEditingController();
-  final TextEditingController _expiryDateController = TextEditingController();
-  final TextEditingController _typeController = TextEditingController();
 
   @override
   void initState() {
@@ -35,47 +34,49 @@ class _PaymentMethods extends State<PaymentMethods> {
   }
 
   void getAutoIncrementIndex() async {
-    autoincrementIndex = await dbHelper.autoIncrement('paymentMethods');
+    autoincrementIndex = await dbHelper.autoIncrement('deliveryAddress');
   }
 
-  void updateSelectedCard(Map<String, dynamic> newCard) {
+  void updateSelectedAddress(Map<String, dynamic> newAddress) {
     setState(() {
-      selectedCard = int.parse(newCard['id']) - 1;
+      selectedAddress = int.parse(newAddress['id']) - 1;
     });
 
     dbHelper.updateData("users/$userId", {
-      'paymentMethods.id': newCard['id'],
-      'paymentMethods.holderName': newCard['holderName'],
-      'paymentMethods.cardNumber': newCard['cardNumber'],
-      'paymentMethods.expiryDate': newCard['expiryDate'],
-      'paymentMethods.type': newCard['type'],
+      'deliveryAddress.id': newAddress['id'],
+      'deliveryAddress.country': newAddress['country'],
+      'deliveryAddress.city': newAddress['city'],
+      'deliveryAddress.street': newAddress['street'],
+      'deliveryAddress.name': newAddress['name'],
     });
 
     setState(() {
-      selectedCard = 0;
+      selectedAddress = 0;
     });
   }
 
-  void deleteCard(Map<String, dynamic> newCard) {
-    dbHelper.deleteData("paymentMethods/${newCard['id']}");
+  void deleteAddress(Map<String, dynamic> newCard) {
+    print("ADDRESS:");
+    print(newCard);
+    dbHelper.deleteData("deliveryAddress/${newCard['id']}");
     setState(() {});
   }
 
   void createCard() {
     dbHelper.updateData("users/$userId", {
-      'paymentMethods.id': autoincrementIndex,
-      'paymentMethods.holderName': _nameController.text,
-      'paymentMethods.cardNumber': _numberController.text,
-      'paymentMethods.expiryDate': _expiryDateController.text,
-      'paymentMethods.type': _typeController.text,
+      'deliveryAddress.id': autoincrementIndex,
+      'deliveryAddress.country': _countryController.text,
+      'deliveryAddress.city': _cityController.text,
+      'deliveryAddress.street': _streetController.text,
+      'deliveryAddress.name': _nameController.text,
     });
-    dbHelper.addData("paymentMethods/$autoincrementIndex", {
+    dbHelper.addData("deliveryAddress/$autoincrementIndex", {
       'id': autoincrementIndex,
-      'holderName': _nameController.text,
-      'cardNumber': _numberController.text,
+      'country': _countryController.text,
+      'city': _cityController.text,
       'userId': userId,
-      'type': _typeController.text,
-      'expiryDate': _expiryDateController.text
+      'street': _streetController.text,
+      'name': _nameController.text,
     });
     setState(() {});
   }
@@ -92,7 +93,7 @@ class _PaymentMethods extends State<PaymentMethods> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment methods'),
+        title: const Text('Delivery Addressess'),
         leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop()),
@@ -114,39 +115,44 @@ class _PaymentMethods extends State<PaymentMethods> {
                 itemBuilder: (users) {
                   var user = users[0];
                   userId = user['id'];
-                  var paymentCard =
-                      user['paymentMethods'] ?? null as Map<String, dynamic>;
+
+                  var deliveryAddress =
+                  user['deliveryAddress'] ?? null as Map<String, dynamic>;
+
+                  print(deliveryAddress);
 
                   return Expanded(
                     child: dbHelper.getData(
-                        path: 'paymentMethods',
+                        path: 'deliveryAddress',
                         columnFilter: 'userId',
                         filterValue: userId,
-                        itemBuilder: (cards) {
-                          var paymentCards = [paymentCard];
+                        itemBuilder: (addressess) {
+                          var deliveryAddressess = [deliveryAddress];
 
-                          print(paymentCard);
+                          print(deliveryAddress);
 
-                          for (int i = 0; i < cards.length; i++) {
-                            print(cards[i]["id"] != paymentCard["id"]);
-                            if (cards[i]["id"] != paymentCard["id"]) {
-                              paymentCards.add(cards[i]);
+                          for (int i = 0; i < addressess.length; i++) {
+                            print(addressess[i]["id"] != deliveryAddress["id"]);
+                            if (addressess[i]["id"] != deliveryAddress["id"]) {
+                              deliveryAddressess.add(addressess[i]);
                             }
                           }
+
+                          print(deliveryAddressess);
 
                           getAutoIncrementIndex();
                           // autoincrementIndex = await dbHelper.autoIncrement('paymentMethods');
 
                           return ListView.builder(
-                            itemCount: paymentCards.length,
+                            itemCount: deliveryAddressess.length,
                             itemBuilder: (context, index) {
-                              return PaymentCard(
-                                paymentCard: paymentCards[index],
-                                chosen: (index == selectedCard),
-                                onSelected: () =>
-                                    updateSelectedCard(paymentCards[index]),
+                              return AddressCard(
+                                deliveryAddress: deliveryAddressess[index],
+                                chosen: (index == selectedAddress),
+                                onSelected: () => updateSelectedAddress(
+                                    deliveryAddressess[index]),
                                 onDeleted: () =>
-                                    deleteCard(paymentCards[index]),
+                                    deleteAddress(deliveryAddressess[index]),
                               );
                             },
                           );
@@ -184,11 +190,11 @@ class _PaymentMethods extends State<PaymentMethods> {
                                 const SizedBox(height: 16),
                                 TextFormField(
                                   decoration: const InputDecoration(
-                                      labelText: 'Card Holder Name'),
+                                      labelText: 'Address Owner'),
                                   controller: _nameController,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter the card holder name';
+                                      return 'Please enter the address owner name';
                                     }
                                     return null;
                                   },
@@ -196,12 +202,11 @@ class _PaymentMethods extends State<PaymentMethods> {
                                 const SizedBox(height: 12),
                                 TextFormField(
                                   decoration: const InputDecoration(
-                                      labelText: 'Card Number'),
-                                  controller: _numberController,
-                                  keyboardType: TextInputType.number,
+                                      labelText: 'Street Name'),
+                                  controller: _streetController,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter the card number';
+                                      return 'Please enter the street name';
                                     }
                                     return null;
                                   },
@@ -209,24 +214,23 @@ class _PaymentMethods extends State<PaymentMethods> {
                                 const SizedBox(height: 12),
                                 TextFormField(
                                   decoration: const InputDecoration(
-                                      labelText: 'Expiry Date (MM/YY)'),
-                                  controller: _expiryDateController,
-                                  keyboardType: TextInputType.datetime,
+                                      labelText: 'City Name'),
+                                  controller: _cityController,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter the expiry date';
+                                      return 'Please enter the city name';
                                     }
                                     return null;
                                   },
                                 ),
+                                const SizedBox(height: 12),
                                 TextFormField(
                                   decoration: const InputDecoration(
-                                      labelText: 'Card Type'),
-                                  controller: _typeController,
-                                  keyboardType: TextInputType.text,
+                                      labelText: 'Country Name'),
+                                  controller: _countryController,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Please enter the card type';
+                                      return 'Please enter the country name';
                                     }
                                     return null;
                                   },
@@ -265,96 +269,49 @@ class _PaymentMethods extends State<PaymentMethods> {
   }
 }
 
-class PaymentCard extends StatefulWidget {
-  final Map<String, dynamic> paymentCard;
+class AddressCard extends StatefulWidget {
+  final Map<String, dynamic> deliveryAddress;
   final bool chosen;
   final VoidCallback onSelected;
   final VoidCallback onDeleted;
 
-  const PaymentCard(
+  const AddressCard(
       {super.key,
-        required this.paymentCard,
+        required this.deliveryAddress,
         required this.chosen,
         required this.onSelected,
         required this.onDeleted});
 
   @override
-  _PaymentCard createState() => _PaymentCard();
+  _AddressCard createState() => _AddressCard();
 }
 
-class _PaymentCard extends State<PaymentCard> {
+class _AddressCard extends State<AddressCard> {
   late bool isChecked;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          color: const Color.fromARGB(255, 47, 46, 46),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: SvgPicture.asset(
-                    'assets/icons/cards/${widget.paymentCard["type"]}.svg',
-                    width: 60,
-                    height: 50,
-                  ),
-                ),
-                Text(
-                  "**** **** **** ${widget.paymentCard['cardNumber'].toString().substring(12)}",
-                  style: const TextStyle(
-                      fontSize: 22, color: Colors.white, letterSpacing: 3),
-                ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: SvgPicture.asset(
-                    'assets/icons/cards/chip.svg',
-                    width: 60,
-                    height: 40,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Card Holder Name",
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 230, 230, 230),
-                              fontSize: 10),
-                        ),
-                        Text(
-                          widget.paymentCard['holderName'],
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Expiry Date",
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 230, 230, 230),
-                              fontSize: 10),
-                        ),
-                        Text(
-                          "${widget.paymentCard['expiryDate'].substring(0, 2)}/${widget.paymentCard['expiryDate'].substring(3)}",
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+        SizedBox(
+          width: double
+              .infinity, // Hace que el ancho se ajuste al máximo disponible.
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.deliveryAddress['name']),
+                  const SizedBox(height: 8),
+                  Text(widget.deliveryAddress['street']),
+                  const SizedBox(height: 8),
+                  Text(
+                      "${widget.deliveryAddress['city']}, ${widget.deliveryAddress['country']}"),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         ),
@@ -370,7 +327,7 @@ class _PaymentCard extends State<PaymentCard> {
                   }
                 },
               ),
-              const Text("Use as payment method")
+              const Text("Use as shipping address")
             ]),
             Row(children: [
               widget.chosen == false

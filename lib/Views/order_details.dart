@@ -63,19 +63,6 @@ class _order_details extends State<order_details> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text('${widget.order['itemCount']} items'),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.order['itemCount'],
-                itemBuilder: (context, index) {
-                  var itemReference = widget.order['items'][index];
-                  var item = DBHelper().accessReference(itemReference);
-                  return ItemCard(data: item);
-                },
-              ),
-            ),
             const SizedBox(height: 16),
             const Text(
               'Order information',
@@ -101,28 +88,6 @@ class _order_details extends State<order_details> {
               isBold: true,
             ),
             const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            OutlinedButton(
-              onPressed: () {},
-              child:
-                  const Text('Reorder', style: TextStyle(color: Colors.black)),
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              ),
-              child: const Text('Leave feedback',
-                  style: TextStyle(color: Colors.white)),
-            ),
           ],
         ),
       ),
