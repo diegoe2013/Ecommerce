@@ -41,8 +41,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       title: item.title,
       price: item.price,
       imageUrl: item.imageUrl,
-      shortDescription: item.description ?? 'No Description',
-      brand: item.brand ?? 'No Brand',
+      shortDescription: item.description,
+      brand: item.brand,
       condition: 'New',
     );
     await bagController.addItemToBag(bagItem);

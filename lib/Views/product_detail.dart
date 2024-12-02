@@ -164,34 +164,59 @@ class _ProductDetailState extends State<ProductDetail> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // Add product to bag
+                            onPressed: () async {
+                              // Simula la lógica de agregar a la bolsa
                               final bagItem = BagItem(
                                 title: product!['title'],
                                 price: double.tryParse(product!['price']['value'].toString()) ?? 0.0,
-                                imageUrl: product! ['image']['imageUrl'],
-                                shortDescription: product! ['shortDescription'] ?? 'No Description',
+                                imageUrl: product!['image']['imageUrl'],
+                                shortDescription: product!['shortDescription'] ?? 'No Description',
                                 brand: product!['brand'] ?? 'No Brand',
                                 condition: product!['condition'] ?? 'No Condition',
                               );
-                              BagController().addItemToBag(bagItem);
+                              await BagController().addItemToBag(bagItem);
+
+                              // Muestra un dialog con un check al agregar
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  Future.delayed(const Duration(seconds: 1), () {
+                                    Navigator.of(context).pop(); // Cierra el dialog automáticamente
+                                  });
+
+                                  return AlertDialog(
+                                    alignment: Alignment.center,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.check_circle, color: Colors.green, size: 50),
+                                        SizedBox(height: 10),
+                                        Text(
+                                          'Added to Bag!',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: const Text(
                               'Add to Bag',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
+                              style: TextStyle(fontSize: 18, color: Colors.white),
                             ),
                           ),
                         ),
+
+
                         // Favorite Icon
                         Positioned(
                           top: 16,
