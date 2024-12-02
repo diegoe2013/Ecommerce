@@ -9,9 +9,10 @@ class MyBag extends StatefulWidget {
   @override
   _MyBagState createState() => _MyBagState();
 }
-
 class _MyBagState extends State<MyBag> {
   final BagController bagController = BagController();
+  final TextEditingController promoCodeController = TextEditingController();
+  String promoCodeError = '';
   bool isLoading = true;
 
   @override
@@ -25,6 +26,28 @@ class _MyBagState extends State<MyBag> {
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<void> _applyPromoCode() async {
+    final promoCode = promoCodeController.text.trim();
+
+    if (promoCode.isEmpty) {
+      setState(() {
+        promoCodeError = 'Promo code cannot be empty.';
+      });
+      return;
+    }
+
+    try {
+      await bagController.addPromoCode(promoCode);
+      setState(() {
+        promoCodeError = ''; // Clear error if the promo code is valid
+      });
+    } catch (e) {
+      setState(() {
+        promoCodeError = 'Invalid promo code.';
+      });
+    }
   }
 
   @override
@@ -65,30 +88,49 @@ class _MyBagState extends State<MyBag> {
             ),
             const SizedBox(height: 10),
             TextField(
+              controller: promoCodeController,
               decoration: InputDecoration(
                 hintText: 'Enter your promo code',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                suffixIcon: Container(
-                  margin: const EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(8.0),
+                suffixIcon: GestureDetector(
+                  onTap: _applyPromoCode,
+                  child: Container(
+                    margin: const EdgeInsets.all(4.0),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: const Icon(Icons.arrow_forward,
+                        color: Colors.white),
                   ),
-                  child: const Icon(Icons.arrow_forward, color: Colors.white),
                 ),
               ),
             ),
+            if (promoCodeError.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  promoCodeError,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total amount:', style: TextStyle(fontSize: 16)),
+                const Text('Total amount:',
+                    style: TextStyle(fontSize: 16)),
                 Text(
                   '\$${bagController.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -97,7 +139,10 @@ class _MyBagState extends State<MyBag> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CheckoutScreen(totalPrice: bagController.totalPrice)),
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(
+                        totalPrice: bagController.totalPrice),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -107,7 +152,8 @@ class _MyBagState extends State<MyBag> {
                 ),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text('Checkout', style: TextStyle(fontSize: 18)),
+              child: const Text('Checkout',
+                  style: TextStyle(fontSize: 18)),
             ),
             const SizedBox(height: 10),
           ],
@@ -163,11 +209,14 @@ class _MyBagState extends State<MyBag> {
                 children: [
                   Text(
                     product.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('Color: Example Color', style: const TextStyle(color: Colors.grey)),
-                  Text('Size: Example Size', style: const TextStyle(color: Colors.grey)),
+                  Text('Color: Example Color',
+                      style: const TextStyle(color: Colors.grey)),
+                  Text('Size: Example Size',
+                      style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -178,7 +227,9 @@ class _MyBagState extends State<MyBag> {
                     IconButton(
                       icon: Icon(
                         Icons.remove_circle_outline,
-                        color: product.quantity > 1 ? Colors.orange : Colors.grey,
+                        color: product.quantity > 1
+                            ? Colors.orange
+                            : Colors.grey,
                       ),
                       onPressed: product.quantity > 1
                           ? () async {
@@ -195,7 +246,8 @@ class _MyBagState extends State<MyBag> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline, color: Colors.orange),
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: Colors.orange),
                       onPressed: () async {
                         await bagController.updateItemQuantity(
                           product.id,
@@ -215,7 +267,8 @@ class _MyBagState extends State<MyBag> {
                 ),
                 Text(
                   '\$${product.price.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),

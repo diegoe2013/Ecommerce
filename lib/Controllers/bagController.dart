@@ -157,6 +157,76 @@ class BagController {
     }
   }
 
+  // Apply Promo Code
+  Future<void> addPromoCode(String promoCode) async {
+    try {
+      final path = 'bags/$_bagId';
+      final bagDoc = await FirebaseFirestore.instance.doc(path).get();
+
+      if (!bagDoc.exists) {
+        throw Exception('Bag not found.');
+      }
+
+      final bagData = bagDoc.data();
+      if (bagData != null && bagData['promoCode'] != null) {
+        throw Exception('A promo code has already been applied.');
+      }
+
+      final promoDoc = await FirebaseFirestore.instance
+          .collection('global_promoCodes')
+          .where('code', isEqualTo: promoCode)
+          .get();
+
+      if (promoDoc.docs.isEmpty) {
+        throw Exception('Promo code not found.');
+      }
+      final promoData = promoDoc.docs.first.data();
+      final discount = promoData['%discount'] ?? 0.0;
+      final discountedPrice = _totalPrice - (_totalPrice * discount);
+      await FirebaseFirestore.instance.doc(path).update({
+        'promoCode': promoCode,
+        'totalPrice': discountedPrice,
+      });
+      _totalPrice = discountedPrice;
+    } catch (e) {
+      throw Exception('Could not apply promo code.');
+    }
+  }
+
+  // Remove Promo Code
+  Future<void> removePromoCode() async {
+    try {
+      final path = 'bags/$_bagId';
+      final bagDoc = await FirebaseFirestore.instance.doc(path).get();
+
+      if (!bagDoc.exists) {
+        throw Exception('Bag not found.');
+      }
+
+      final bagData = bagDoc.data();
+      if (bagData == null || bagData['promoCode'] == null) {
+        throw Exception('No promo code applied.');
+      }
+
+      final currentDiscount = bagData['promoCode'] != null
+          ? (bagData['%discount'] ?? 0.0)
+          : 0.0;
+
+      final originalTotalPrice = _totalPrice / (1 - currentDiscount);
+
+      await FirebaseFirestore.instance.doc(path).update({
+        'promoCode': null,
+        'totalPrice': originalTotalPrice,
+        '%discount': null,
+      });
+
+      _totalPrice = originalTotalPrice;
+    } catch (e) {
+      debugPrint('Error removing promo code: $e');
+      throw Exception('Could not remove promo code.');
+    }
+  }
+
   // Initialize a new Bag
   Future<void> _initializeBag(String userId, String newBagId) async {
     try {
@@ -164,6 +234,7 @@ class BagController {
         'bagId': newBagId,
         'userId': userId,
         'items': [],
+        'promoCode': null,
         'totalPrice': 0.00,
       };
       await _dbHelper.addData('bags/$newBagId', initialBagData);
