@@ -6,7 +6,7 @@ class Category extends StatelessWidget {
   final List<Map<String, String>> categories = [
     {"name": "Clothing", "image": "assets/images/Clothing.svg"},
     {"name": "Shoes", "image": "assets/images/Shoes.svg"},
-    {"name": "Bags", "image": "assets/images/Bags.svg"},
+    {"name": "Bags", "image": "assets/images/bags.svg"},
     {"name": "Lingerie", "image": "assets/images/Lingeries.svg"},
     {"name": "Watch", "image": "assets/images/Watch.svg"},
     {"name": "Hoodies", "image": "assets/images/Hoodies.svg"},
