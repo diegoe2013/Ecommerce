@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
+import 'package:untitled/Controllers/auth.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/settings.dart';
@@ -7,6 +8,7 @@ import 'package:untitled/Views/settings.dart';
 class Profile extends StatelessWidget {
   final userId = "1";
   final DBHelper dbHelper = DBHelper();
+  final AuthService _auth = AuthService();
 
   Profile({super.key});
 
@@ -54,7 +56,8 @@ class Profile extends StatelessWidget {
                           children: [
                             const CircleAvatar(
                               radius: 35,
-                              backgroundImage: AssetImage('assets/profile_picture.png'),
+                              backgroundImage:
+                                  AssetImage('assets/profile_picture.png'),
                             ),
                             const SizedBox(width: 16),
                             Column(
@@ -79,12 +82,14 @@ class Profile extends StatelessWidget {
                       const Divider(),
                       ProfileOption(
                         title: 'My orders',
-                        subtitle: 'You have ${orders.length} order${orders.length==1?"":"s"}',
+                        subtitle:
+                            'You have ${orders.length} order${orders.length == 1 ? "" : "s"}',
                         icon: Icons.chevron_right,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const MyOrders()),
+                            MaterialPageRoute(
+                                builder: (context) => const MyOrders()),
                           );
                         },
                       ),
@@ -98,12 +103,14 @@ class Profile extends StatelessWidget {
                       const Divider(),
                       ProfileOption(
                         title: 'Payment methods',
-                        subtitle:'${user['paymentMethods']['type']} **${user['paymentMethods']['cardNumber'].toString().substring(14)}',
+                        subtitle:
+                            '${user['paymentMethods']['type']} **${user['paymentMethods']['cardNumber'].toString().substring(14)}',
                         icon: Icons.chevron_right,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => PaymentMethods()),
+                            MaterialPageRoute(
+                                builder: (context) => const PaymentMethods()),
                           );
                         },
                       ),
@@ -130,6 +137,19 @@ class Profile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => Settings()),
+                          );
+                        },
+                      ),
+                      ProfileOption(
+                        title: 'log out',
+                        subtitle: 'log out and see you later!',
+                        icon: Icons.chevron_right,
+                        onTap: () async {
+                          await _auth.signOut();
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route) => false,
                           );
                         },
                       ),
@@ -161,8 +181,10 @@ class Profile extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Cart'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Favorites'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

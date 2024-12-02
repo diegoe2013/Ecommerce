@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:untitled/Controllers/auth.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+
 class ForgotPassword extends StatelessWidget {
   ForgotPassword({super.key});
 
-  final AUthService _authService = AUthService(); // Instancia de AUthService
+  final AuthService _authService = AuthService(); // Instancia de AuthService
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -115,8 +116,6 @@ class ForgotPassword extends StatelessWidget {
   }
 }
 
-
-
 class EnterCode extends StatelessWidget {
   const EnterCode({super.key});
 
@@ -167,7 +166,8 @@ class EnterCode extends StatelessWidget {
                             textAlign: TextAlign.center,
                             maxLength: 1, // Limita a un solo carácter
                             decoration: InputDecoration(
-                              counterText: "", // Oculta el contador de caracteres
+                              counterText:
+                                  "", // Oculta el contador de caracteres
                               filled: true,
                               fillColor: Colors.grey[200],
                               border: OutlineInputBorder(
@@ -241,7 +241,6 @@ class EnterCode extends StatelessWidget {
     );
   }
 }
-
 
 class SetupNewPassword extends StatelessWidget {
   const SetupNewPassword({super.key});
