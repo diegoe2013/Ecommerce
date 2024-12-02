@@ -30,7 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  uuid: ^3.0.4
+  uuid: ^4.5.1
+  flutter_stripe: ^11.3.0
+  shelf: ^1.4.0
+  shelf_router: ^1.0.0
   flutter_svg: ^2.0.7
   flutter_form_builder: ^9.5.0
   form_builder_validators: ^11.0.0
@@ -55,7 +58,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

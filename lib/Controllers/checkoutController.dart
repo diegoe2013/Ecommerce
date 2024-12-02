@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:untitled/Models/bag_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CheckoutController {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final DBHelper _dbHelper = DBHelper();
-  String _bagId = '';
   String _userId = '';
-  List<BagItem> _bagItems = [];
-  double _totalPrice = 0.0;
 
   // Fetch default Shipping Address
   Future<Map<String, dynamic>> fetchShippingAddress() async {
@@ -89,6 +87,65 @@ class CheckoutController {
       }).toList();
     } catch (e) {
       throw Exception('Error fetching delivery methods: $e');
+    }
+  }
+
+  // Process Payment with Stripe
+  Future<void> processPayment(double amount, Map<String, dynamic> paymentMethod) async {
+    try {
+      // Validate payment method information
+      if (!paymentMethod.containsKey('cardNumber') ||
+          !paymentMethod.containsKey('expiryDate') ||
+          !paymentMethod.containsKey('type')) {
+        throw Exception('Payment method information is incomplete.');
+      }
+
+      // Create a Stripe PaymentIntent
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        headers: {
+          'Authorization': 'Bearer sk_test_51QRRS7DjvqEatelqPJ75h1tt61ipzvhbDULjCLvL8dj4BiHpULIFs27jsakJRU3AIpN3mdptSOhbKjIEpVY2QLWD008eAHxHLq',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'amount': (amount * 100).toInt().toString(),
+          'currency': 'usd', // default to usd
+          'payment_method_types[]': 'card',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al crear el PaymentIntent: ${response.body}');
+      }
+
+      final paymentIntentData = json.decode(response.body);
+
+      // Validate PaymentIntent data
+      final confirmResponse = await http.post(
+        Uri.parse(
+            'https://api.stripe.com/v1/payment_intents/${paymentIntentData['id']}/confirm'),
+        headers: {
+          'Authorization': 'Bearer sk_test_YOUR_SECRET_KEY',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'payment_method_data[type]': 'card',
+          'payment_method_data[card][number]': paymentMethod['cardNumber'],
+          'payment_method_data[card][exp_month]': paymentMethod['expiryDate']
+              .split('/')[0],
+          'payment_method_data[card][exp_year]': paymentMethod['expiryDate']
+              .split('/')[1],
+          'payment_method_data[card][cvc]': '123',
+        },
+      );
+
+      if (confirmResponse.statusCode != 200) {
+        throw Exception('Error al confirmar el pago: ${confirmResponse.body}');
+      }
+
+      debugPrint('Pago procesado exitosamente.');
+    } catch (e) {
+      throw Exception('Error procesando el pago: $e');
     }
   }
 }

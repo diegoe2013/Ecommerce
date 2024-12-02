@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/checkoutController.dart';
 import 'package:untitled/Views/payment_methods.dart';
+import 'package:untitled/Views/orderConfirmation.dart';
 //import 'package:untitled/Views/shipping_address.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -283,7 +284,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             // Submit Order Button
             ElevatedButton(
               onPressed: () {
-                // Lógica de confirmación de pedido
+                try {
+                  final deliveryFee = selectedDeliveryMethod != null
+                      ? (selectedDeliveryMethod!['dailyFee'] * deliveryDays)
+                      : 0.0;
+                  final totalAmount = widget.totalPrice + deliveryFee;
+
+                  // Process payment with Stripe
+                   _checkoutController.processPayment(totalAmount, paymentMethods);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Pago realizado con éxito")),
+                  );
+
+                  // Redirect to success page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OrderConfirmationScreen(),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error en el pago: $e")),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
