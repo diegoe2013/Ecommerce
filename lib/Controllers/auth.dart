@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 
 class AUthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  Future<bool> isAuthenticated() async {
+    final user = FirebaseAuth.instance.currentUser;
+    return user != null; // Retorna true si hay un usuario autenticado
+  }
 
   Future createAcount(String email, String password) async {
     try {
@@ -65,4 +70,16 @@ class AUthService {
       );
     }
   }
+  
+  // Método para verificar si el usuario está autenticado
+  User? get currentUser => _auth.currentUser;
+
+  // Cerrar sesión
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+
+
+
 }

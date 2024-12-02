@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
+import 'package:untitled/Controllers/auth.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/settings.dart';
@@ -7,6 +8,7 @@ import 'package:untitled/Views/settings.dart';
 class Profile extends StatelessWidget {
   final userId = "1";
   final DBHelper dbHelper = DBHelper();
+  final AUthService _auth = AUthService();
 
   Profile({super.key});
 
@@ -130,6 +132,19 @@ class Profile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => Settings()),
+                          );
+                        },
+                      ),
+                      ProfileOption(
+                        title: 'log out',
+                        subtitle: 'log out and see you later!',
+                        icon: Icons.chevron_right,
+                        onTap: () async{
+                          await _auth.signOut();
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route) => false,
                           );
                         },
                       ),
