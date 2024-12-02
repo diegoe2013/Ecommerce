@@ -186,6 +186,7 @@ class BagController {
       await FirebaseFirestore.instance.doc(path).update({
         'promoCode': promoCode,
         'totalPrice': discountedPrice,
+        '%discount': discount,
       });
       _totalPrice = discountedPrice;
     } catch (e) {
@@ -212,12 +213,11 @@ class BagController {
           ? (bagData['%discount'] ?? 0.0)
           : 0.0;
 
-      final originalTotalPrice = _totalPrice / (1 - currentDiscount);
-
+      final originalTotalPrice = _totalPrice/(1 - currentDiscount);
       await FirebaseFirestore.instance.doc(path).update({
-        'promoCode': null,
         'totalPrice': originalTotalPrice,
-        '%discount': null,
+        'promoCode': null,
+        '%discount': 0.0,
       });
 
       _totalPrice = originalTotalPrice;
@@ -235,7 +235,8 @@ class BagController {
         'userId': userId,
         'items': [],
         'promoCode': null,
-        'totalPrice': 0.00,
+        'discount': 0.0,
+        'totalPrice': 0.0,
       };
       await _dbHelper.addData('bags/$newBagId', initialBagData);
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/bagController.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/Models/bag_item.dart';
 import 'package:untitled/Views/checkout.dart';
 
@@ -9,10 +10,13 @@ class MyBag extends StatefulWidget {
   @override
   _MyBagState createState() => _MyBagState();
 }
+
 class _MyBagState extends State<MyBag> {
   final BagController bagController = BagController();
   final TextEditingController promoCodeController = TextEditingController();
   String promoCodeError = '';
+  String appliedPromoCode = '';
+  double discountPercentage = 0.0;
   bool isLoading = true;
 
   @override
@@ -25,6 +29,7 @@ class _MyBagState extends State<MyBag> {
     await bagController.fetchBag();
     setState(() {
       isLoading = false;
+      appliedPromoCode = ''; // Reset promo code on fetch
     });
   }
 
@@ -40,13 +45,42 @@ class _MyBagState extends State<MyBag> {
 
     try {
       await bagController.addPromoCode(promoCode);
+
+      final promoDoc = await FirebaseFirestore.instance
+          .collection('global_promoCodes')
+          .where('code', isEqualTo: promoCode)
+          .get();
+
+      if (promoDoc.docs.isNotEmpty) {
+        final promoData = promoDoc.docs.first.data();
+        discountPercentage = (promoData['%discount'] ?? 0.0) * 100; // Convert to %
+      }
+
       setState(() {
-        promoCodeError = ''; // Clear error if the promo code is valid
+        promoCodeError = '';
+        appliedPromoCode = promoCode;
       });
     } catch (e) {
       setState(() {
         promoCodeError = 'Invalid promo code.';
       });
+    }
+  }
+
+  Future<void> _removePromoCode() async {
+    try {
+      await bagController.removePromoCode();
+
+      setState(() {
+        appliedPromoCode = '';
+        discountPercentage = 0.0;
+        promoCodeController.clear();
+      });
+
+      // Refresh data
+      await _fetchBagData();
+    } catch (e) {
+      debugPrint('Error removing promo code: $e');
     }
   }
 
@@ -121,7 +155,28 @@ class _MyBagState extends State<MyBag> {
                   ),
                 ),
               ),
-            const SizedBox(height: 10),
+            if (appliedPromoCode.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Promo Code: $appliedPromoCode ($discountPercentage%)',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle,
+                          color: Colors.red),
+                      onPressed: _removePromoCode,
+                    ),
+                  ],
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
