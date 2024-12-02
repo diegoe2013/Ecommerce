@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
         ),
         
         '/favorites': (context) => const AuthGuard(
-          child: Favorites(),
+          child: FavoritesScreen(),
         ),
         
         '/payment_methods': (context) => const AuthGuard(
