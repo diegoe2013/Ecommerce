@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/checkoutController.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/orderConfirmation.dart';
+import 'package:untitled/Controllers/myOrdersController.dart';
 //import 'package:untitled/Views/shipping_address.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -283,7 +284,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             // Submit Order Button
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 try {
                   final deliveryFee = selectedDeliveryMethod != null
                       ? (selectedDeliveryMethod!['dailyFee'] * deliveryDays)
@@ -296,6 +297,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Pago realizado con éxito")),
                   );
+                  // Create order
+                  final MyOrdersController ordersController = MyOrdersController();
+                  await ordersController.createOrder();
 
                   // Redirect to success page
                   Navigator.push(
