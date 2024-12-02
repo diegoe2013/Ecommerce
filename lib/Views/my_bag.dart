@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/bagController.dart';
 import 'package:untitled/Models/bag_item.dart';
+import 'package:untitled/Views/checkout.dart';
 
 class MyBag extends StatefulWidget {
   const MyBag({super.key});
@@ -93,7 +94,12 @@ class _MyBagState extends State<MyBag> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CheckoutScreen(totalPrice: bagController.totalPrice)),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 shape: RoundedRectangleBorder(
