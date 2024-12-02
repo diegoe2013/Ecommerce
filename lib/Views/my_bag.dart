@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/Controllers/bagController.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:untitled/Models/bag_item.dart';
+import 'package:untitled/Views/checkout.dart';
 
 class MyBag extends StatefulWidget {
   const MyBag({super.key});
@@ -11,6 +13,10 @@ class MyBag extends StatefulWidget {
 
 class _MyBagState extends State<MyBag> {
   final BagController bagController = BagController();
+  final TextEditingController promoCodeController = TextEditingController();
+  String promoCodeError = '';
+  String appliedPromoCode = '';
+  double discountPercentage = 0.0;
   bool isLoading = true;
 
   @override
@@ -23,7 +29,59 @@ class _MyBagState extends State<MyBag> {
     await bagController.fetchBag();
     setState(() {
       isLoading = false;
+      appliedPromoCode = ''; // Reset promo code on fetch
     });
+  }
+
+  Future<void> _applyPromoCode() async {
+    final promoCode = promoCodeController.text.trim();
+
+    if (promoCode.isEmpty) {
+      setState(() {
+        promoCodeError = 'Promo code cannot be empty.';
+      });
+      return;
+    }
+
+    try {
+      await bagController.addPromoCode(promoCode);
+
+      final promoDoc = await FirebaseFirestore.instance
+          .collection('global_promoCodes')
+          .where('code', isEqualTo: promoCode)
+          .get();
+
+      if (promoDoc.docs.isNotEmpty) {
+        final promoData = promoDoc.docs.first.data();
+        discountPercentage = (promoData['%discount'] ?? 0.0) * 100; // Convert to %
+      }
+
+      setState(() {
+        promoCodeError = '';
+        appliedPromoCode = promoCode;
+      });
+    } catch (e) {
+      setState(() {
+        promoCodeError = 'Invalid promo code.';
+      });
+    }
+  }
+
+  Future<void> _removePromoCode() async {
+    try {
+      await bagController.removePromoCode();
+
+      setState(() {
+        appliedPromoCode = '';
+        discountPercentage = 0.0;
+        promoCodeController.clear();
+      });
+
+      // Refresh data
+      await _fetchBagData();
+    } catch (e) {
+      debugPrint('Error removing promo code: $e');
+    }
   }
 
   @override
@@ -64,36 +122,84 @@ class _MyBagState extends State<MyBag> {
             ),
             const SizedBox(height: 10),
             TextField(
+              controller: promoCodeController,
               decoration: InputDecoration(
                 hintText: 'Enter your promo code',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                suffixIcon: Container(
-                  margin: const EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(8.0),
+                suffixIcon: GestureDetector(
+                  onTap: _applyPromoCode,
+                  child: Container(
+                    margin: const EdgeInsets.all(4.0),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: const Icon(Icons.arrow_forward,
+                        color: Colors.white),
                   ),
-                  child: const Icon(Icons.arrow_forward, color: Colors.white),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            if (promoCodeError.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  promoCodeError,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            if (appliedPromoCode.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Promo Code: $appliedPromoCode ($discountPercentage%)',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle,
+                          color: Colors.red),
+                      onPressed: _removePromoCode,
+                    ),
+                  ],
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total amount:', style: TextStyle(fontSize: 16)),
+                const Text('Total amount:',
+                    style: TextStyle(fontSize: 16)),
                 Text(
                   '\$${bagController.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(
+                        totalPrice: bagController.totalPrice),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 shape: RoundedRectangleBorder(
@@ -101,7 +207,8 @@ class _MyBagState extends State<MyBag> {
                 ),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text('Checkout', style: TextStyle(fontSize: 18)),
+              child: const Text('Checkout',
+                  style: TextStyle(fontSize: 18)),
             ),
             const SizedBox(height: 10),
           ],
@@ -157,11 +264,14 @@ class _MyBagState extends State<MyBag> {
                 children: [
                   Text(
                     product.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('Color: Example Color', style: const TextStyle(color: Colors.grey)),
-                  Text('Size: Example Size', style: const TextStyle(color: Colors.grey)),
+                  Text('Color: Example Color',
+                      style: const TextStyle(color: Colors.grey)),
+                  Text('Size: Example Size',
+                      style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -172,7 +282,9 @@ class _MyBagState extends State<MyBag> {
                     IconButton(
                       icon: Icon(
                         Icons.remove_circle_outline,
-                        color: product.quantity > 1 ? Colors.orange : Colors.grey,
+                        color: product.quantity > 1
+                            ? Colors.orange
+                            : Colors.grey,
                       ),
                       onPressed: product.quantity > 1
                           ? () async {
@@ -189,7 +301,8 @@ class _MyBagState extends State<MyBag> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline, color: Colors.orange),
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: Colors.orange),
                       onPressed: () async {
                         await bagController.updateItemQuantity(
                           product.id,
@@ -209,7 +322,8 @@ class _MyBagState extends State<MyBag> {
                 ),
                 Text(
                   '\$${product.price.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),

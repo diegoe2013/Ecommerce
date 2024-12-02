@@ -1,9 +1,11 @@
+import 'package:untitled/Controllers/payment_server.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:untitled/Views/forgot_password.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 // import 'Views/profile.dart';
 import 'Controllers/databaseHelper.dart';
@@ -22,7 +24,9 @@ import 'Views/categories.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  Stripe.publishableKey = 'pk_test_51QRRS7DjvqEatelq6BtphwzT621UhvjoB9I6plQsu3l9V3hbctk8q1DsOpR6A8sKlFF51j7OAVChKwovJfExFSmA00S5RUC7Qr';
   await Firebase.initializeApp();
+  startServer();
   runApp(const MyApp());
 }
 
