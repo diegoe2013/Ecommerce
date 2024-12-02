@@ -3,15 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Controllers/bagController.dart';
 
-
 class MyOrdersController {
   final DBHelper _dbHelper = DBHelper();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final BagController _bagController = BagController();
 
-  // Create an order
   Future<void> createOrder() async {
-
     try {
       final userId = await _getUserIdByEmail();
       final deliveryAddress = await _getDeliveryAddress(userId);
@@ -25,8 +22,10 @@ class MyOrdersController {
         throw Exception('No items in bag');
       }
 
-      // Prepare data for the order
+      final nextId = await _getNextOrderId();
+
       final orderData = {
+        'id': nextId, // ID incremental
         'userId': userId,
         'paymentMethod': {
           'cardNumber': paymentMethod['cardNumber'],
@@ -47,7 +46,7 @@ class MyOrdersController {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore.collection('orders').add(orderData);
+      await _firestore.collection('orders').doc(nextId.toString()).set(orderData);
 
       await _clearBag(_bagController.bagId);
     } catch (e) {
@@ -55,7 +54,26 @@ class MyOrdersController {
     }
   }
 
-  // Fetch default Shipping Address
+  Future<String> _getNextOrderId() async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('orders')
+          .orderBy('id', descending: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final lastId = int.parse(querySnapshot.docs.first['id'] as String);
+        return (lastId + 1).toString();
+      } else {
+        return '1';
+      }
+    } catch (e) {
+      throw Exception('Error fetching next order ID: $e');
+    }
+  }
+
+  // Fetch delivery address from user
   Future<Map<String, dynamic>> _getDeliveryAddress(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
@@ -71,7 +89,7 @@ class MyOrdersController {
     }
   }
 
-  // Fetch default Payment Method
+  // Fetch payment method
   Future<Map<String, dynamic>> _getPaymentMethod(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
@@ -87,7 +105,7 @@ class MyOrdersController {
     }
   }
 
-  // Clear bag after creating an order
+  // Clear bag after order is created
   Future<void> _clearBag(String bagId) async {
     try {
       await _firestore.collection('bags').doc(bagId).update({
@@ -99,26 +117,24 @@ class MyOrdersController {
     }
   }
 
-  // Get userId from email
+  // Fetch userId from email
   Future<String> _getUserIdByEmail() async {
     try {
-      // Get the email of the authenticated user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null || user.email == null) {
         throw Exception('User not authenticated');
       }
 
       final userEmail = user.email!;
-      // Query the 'users' collection to find the user with the given email
       final users = await _dbHelper.fetchData('users', 'email', userEmail);
 
       if (users.isNotEmpty) {
         return users.first['id'];
       } else {
-        return '';
+        throw Exception('User not found');
       }
     } catch (e) {
-      return '';
+      throw Exception('Error fetching user ID: $e');
     }
   }
 }
