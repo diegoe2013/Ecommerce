@@ -3,12 +3,15 @@ import 'package:untitled/Controllers/databaseHelper.dart';
 import 'package:untitled/Controllers/apiService.dart';
 import 'package:untitled/Controllers/getData.dart';
 import 'package:untitled/Controllers/bagController.dart';
+import 'package:untitled/Controllers/favoritesController.dart';
 import 'package:untitled/Models/bag_item.dart';
+import 'package:untitled/Models/favorite_item.dart';
 import 'write_review.dart';
 
 class ProductDetail extends StatefulWidget {
+
   final String productId;
-  final List<dynamic> productList; 
+  final List<dynamic> productList;
 
   const ProductDetail({Key? key, required this.productId, required this.productList}) : super(key: key);
 
@@ -17,17 +20,20 @@ class ProductDetail extends StatefulWidget {
 }
 
 class _ProductDetailState extends State<ProductDetail> {
+  final FavoritesController favoritesController = FavoritesController();
   final DBHelper dbHelper = DBHelper();
   Map<String, dynamic>? product;
   bool isLoading = true;
   List<Map<String, dynamic>> reviews = [];
   double averageRating = 0.0;
   bool isReviewsLoading = true;
+  bool isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     fetchProductDetails();
+    checkIfFavorite();
   }
 
   Future<void> fetchProductDetails() async {
@@ -47,6 +53,42 @@ class _ProductDetailState extends State<ProductDetail> {
       });
       print('Error fetching product details: $e');
     }
+  }
+
+  Future<void> checkIfFavorite() async {
+    if (product == null) return;
+
+    final favorites = await favoritesController.fetchFavorites();
+    setState(() {
+      isFavorite = favorites.any((fav) => fav.title == product!['title']);
+    });
+  }
+
+  Future<void> toggleFavorite() async {
+    if (product == null) return;
+
+    if (isFavorite) {
+      // Remove from favorites
+      final favorites = await favoritesController.fetchFavorites();
+      final favorite = favorites.firstWhere((fav) => fav.title == product!['title']);
+      await favoritesController.removeFavorite(favorite.id);
+    } else {
+      // Add to favorites
+      final favoriteItem = FavoriteItem(
+        title: product!['title'],
+        price: double.tryParse(product!['price']['value'].toString()) ?? 0.0,
+        imageUrl: product!['image']['imageUrl'],
+        description: product!['shortDescription'] ?? 'No Description',
+        brand: product!['brand'] ?? 'No Brand',
+        color: 'Unknown',
+        size: 'Unknown',
+      );
+      await favoritesController.addFavorite(favoriteItem);
+    }
+
+    setState(() {
+      isFavorite = !isFavorite;
+    });
   }
 
   @override
@@ -148,6 +190,19 @@ class _ProductDetailState extends State<ProductDetail> {
                                 color: Colors.white,
                               ),
                             ),
+                          ),
+                        ),
+                        // Favorite Icon
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: IconButton(
+                            icon: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.grey,
+                              size: 30
+                            ),
+                            onPressed: toggleFavorite,
                           ),
                         ),
                         Column(
@@ -301,7 +356,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
-  final List<dynamic> productList; 
+  final List<dynamic> productList;
 
   const ProductCard({Key? key, required this.product, required this.productList}) : super(key: key);
 

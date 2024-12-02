@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
         '/welcome': (context) => const Welcome(),
         '/my_bag': (context) => const MyBag(),
         '/settings': (context) =>  Settings(),
-        '/favorites': (context) =>  const Favorites(),
+        '/favorites': (context) =>  const FavoritesScreen(),
         '/payment_methods': (context) =>  const PaymentMethods(),
         '/categories': (context) => Category(),
       },
