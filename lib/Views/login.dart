@@ -13,9 +13,9 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final AUthService _auth = AUthService(); // Servicio de autenticación.
+  final AuthService _auth = AuthService(); 
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
-  bool obscureText = true; // Estado para ocultar o mostrar la contraseña.
+  bool obscureText = true; // ocultar o mostrar la contraseña.
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,9 @@ class _LoginState extends State<Login> {
                         filled: true,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureText ? Icons.visibility_off : Icons.visibility,
+                            obscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -115,6 +117,41 @@ class _LoginState extends State<Login> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  // onPressed: () async {
+                  //   if (_formKey.currentState?.saveAndValidate() == true) {
+                  //     final formData = _formKey.currentState?.value;
+                  //     final result = await _auth.signInEmailAndPassword(
+                  //       formData?['email'],
+                  //       formData?['password'],
+                  //     );
+
+                  //     if (result == 1) {
+                  //       ScaffoldMessenger.of(context).showSnackBar(
+                  //         const SnackBar(
+                  //           content: Text('Usuario no encontrado.'),
+                  //           backgroundColor: Colors.red,
+                  //         ),
+                  //       );
+                  //     } else if (result == 2) {
+                  //       ScaffoldMessenger.of(context).showSnackBar(
+                  //         const SnackBar(
+                  //           content: Text('Contraseña incorrecta.'),
+                  //           backgroundColor: Colors.red,
+                  //         ),
+                  //       );
+                  //     } else if (result != null) {
+                  //       Navigator.pushNamed(context, '/home');
+                  //     }
+                  //   } else {
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       const SnackBar(
+                  //         content: Text(
+                  //             'Por favor, completa todos los campos correctamente.'),
+                  //         backgroundColor: Colors.orange,
+                  //       ),
+                  //     );
+                  //   }
+                  // },
                   onPressed: () async {
                     if (_formKey.currentState?.saveAndValidate() == true) {
                       final formData = _formKey.currentState?.value;
@@ -123,33 +160,53 @@ class _LoginState extends State<Login> {
                         formData?['password'],
                       );
 
+                      debugPrint('Resultado del login: $result');
+
                       if (result == 1) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const AlertDialog(
-                            title: Text('Error'),
-                            content: Text('Usuario no encontrado'),
+                        // Usuario no encontrado
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Usuario no encontrado.'),
+                            backgroundColor: Colors.red,
                           ),
                         );
                       } else if (result == 2) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const AlertDialog(
-                            title: Text('Error'),
-                            content: Text('Contraseña incorrecta'),
+                        // Contraseña incorrecta
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Contraseña incorrecta.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (result == 3 || result == 4) {
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Usuario o contraseña incorrecto'),
+                            backgroundColor: Colors.red,
                           ),
                         );
                       } else if (result != null) {
+                        // Login exitoso
                         Navigator.pushNamed(context, '/home');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Error desconocido, intente nuevamente.'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
                       }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Por favor, completa todos los campos correctamente'),
+                          backgroundColor: Colors.orange,
                         ),
                       );
                     }
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(

@@ -6,11 +6,13 @@ import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
 import 'package:untitled/Views/settings.dart';
 import 'package:untitled/Views/shippingAddress.dart';
+import 'package:untitled/Controllers/auth.dart';
 
 class Profile extends StatelessWidget {
   final user = FirebaseAuth.instance.currentUser;
   String userId = '0';
   final DBHelper dbHelper = DBHelper();
+  final AuthService _auth = AuthService();
 
   Profile({super.key});
 
@@ -133,6 +135,19 @@ class Profile extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => Settings()),
                     );
                   },
+                ),
+                ProfileOption(
+                title: 'log out',
+                subtitle: 'log out and see you later!',
+                icon: Icons.chevron_right,
+                onTap: () async {
+                await _auth.signOut();
+                Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+                );
+                },
                 ),
               ],
             );

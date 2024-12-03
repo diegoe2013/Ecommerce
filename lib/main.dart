@@ -1,6 +1,7 @@
 import 'package:untitled/Controllers/payment_server.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled/Views/forgot_password.dart';
 import 'package:untitled/Views/my_orders.dart';
 import 'package:untitled/Views/payment_methods.dart';
@@ -20,6 +21,7 @@ import 'Views/my_bag.dart';
 import 'Views/settings.dart';
 import 'Views/favorites.dart';
 import 'Views/categories.dart';
+import 'Controllers/auth_guard.dart';
 import 'Views/my_orders.dart';
 
 void main() async {
@@ -28,11 +30,15 @@ void main() async {
   Stripe.publishableKey = 'pk_test_51QRRS7DjvqEatelq6BtphwzT621UhvjoB9I6plQsu3l9V3hbctk8q1DsOpR6A8sKlFF51j7OAVChKwovJfExFSmA00S5RUC7Qr';
   await Firebase.initializeApp();
   startServer();
-  runApp(const MyApp());
+
+  final user = FirebaseAuth.instance.currentUser;
+  runApp(MyApp(initialRoute: user == null ? '/welcome' : '/home'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute; 
+
+  const MyApp({required this.initialRoute, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,20 +46,43 @@ class MyApp extends StatelessWidget {
       title: 'Ecommerce App',
       initialRoute: '/welcome',
       routes: {
+        '/welcome': (context) => const Welcome(),
         '/create_account': (context) =>  CreateAccount(),
         '/login': (context) =>  Login(),
         '/forgot_password': (context) =>  ForgotPassword(),
-        '/home': (context) => const HomeScreen(initialCategory: 'clothes'),
-        '/my_orders': (context) => const MyOrders(),
-        '/profile': (context) => Profile(),
-        '/welcome': (context) => const Welcome(),
-        '/my_bag': (context) => const MyBag(),
-        '/settings': (context) =>  Settings(),
-        '/favorites': (context) =>  const FavoritesScreen(),
-        '/payment_methods': (context) =>  const PaymentMethods(),
-        '/categories': (context) => Category(),
+
+        '/home': (context) => const AuthGuard(
+          child: HomeScreen(initialCategory: 'clothes'),
+        ),
+
+        '/my_orders': (context) => const AuthGuard(
+          child:  MyOrders(),
+        ),
+
+        '/profile': (context) => AuthGuard(
+          child: Profile(),
+        ),
+        
+        '/my_bag': (context) => const AuthGuard(
+          child:  MyBag(),
+        ),
+        
+        '/settings': (context) =>  AuthGuard(
+          child:  Settings(),
+        ),
+        
+        '/favorites': (context) => const AuthGuard(
+          child: FavoritesScreen(),
+        ),
+        
+        '/payment_methods': (context) => const AuthGuard(
+          child: PaymentMethods(),
+        ),
+        
+        '/categories': (context) => AuthGuard(
+          child: Category(),
+        ),
       },
     );
-  }
-}
-
+  }//widget build
+}//class myapp

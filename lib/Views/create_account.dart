@@ -15,7 +15,7 @@ class CreateAccount extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<CreateAccount> {
-  final AUthService _auth = AUthService();
+  final AuthService _auth = AuthService();
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   bool obscureText = true; // Estado para mostrar/ocultar contraseña.
   late String autoincrementIndex;
@@ -104,11 +104,14 @@ class _CreateAccountState extends State<CreateAccount> {
                         filled: true,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            obscureText ? Icons.visibility_off : Icons.visibility,
+                            obscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
-                              obscureText = !obscureText; // Alternar visibilidad.
+                              obscureText =
+                                  !obscureText; // Alternar visibilidad.
                             });
                           },
                         ),
@@ -122,7 +125,8 @@ class _CreateAccountState extends State<CreateAccount> {
                           errorText: 'La contraseña es obligatoria',
                         ),
                         FormBuilderValidators.minLength(6,
-                            errorText: 'La contraseña debe tener al menos 6 caracteres'),
+                            errorText:
+                                'La contraseña debe tener al menos 6 caracteres'),
                       ]),
                     ),
                     const SizedBox(height: 16),
@@ -196,11 +200,11 @@ class _CreateAccountState extends State<CreateAccount> {
                           ),
                         );
                       } else if (result != null) {
-
                         final birthDate = formData?['birthDate'];
-                       
+
                         //Datos para fireStore
-                        autoincrementIndex = await dbHelper.autoIncrement('users');
+                        autoincrementIndex =
+                            await dbHelper.autoIncrement('users');
 
                         final userData = {
                           "birthDate": birthDate,
@@ -208,10 +212,10 @@ class _CreateAccountState extends State<CreateAccount> {
                           "updatedAt": DateTime.now().toIso8601String(),
                           "email": formData?['email'],
                           "favorites": [],
-                          // "id": result,
+                         // "id": result,
                           'id': autoincrementIndex,
                           "name": formData?['name'],
-                          "password": formData?['password'], 
+                          // "password": formData?['password'],
                           "paymentMethods": {},
                           "phone": formData?['phone'],
                           "profileImageUrl": "img.png",
@@ -220,25 +224,24 @@ class _CreateAccountState extends State<CreateAccount> {
                             "newArrivals": false,
                             "sales": false,
                           },
-                          "userType": "user",
+                          "userType": "customer",
                         };
 
                         // Guardar en Firestore
-                        
                         await dbHelper.addData("users/$autoincrementIndex", userData);
 
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const ChooseAccountType(),
+                            builder: (context) =>  ChooseAccountType(),
                           ),
                         );
                       }
-                      
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Por favor, completa todos los campos correctamente'),
+                          content: Text(
+                              'Por favor, completa todos los campos correctamente'),
                         ),
                       );
                     }

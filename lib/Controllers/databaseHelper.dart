@@ -10,44 +10,6 @@ class DBHelper {
     await docRef.set(data); 
   }
 
-  //funcion original comentada
-  // String autoIncrement(List<Map<String, dynamic>> data) {
-  //   int max = 0;
-  //   for (int i = 0; i < data.length; i++) {
-  //     int id = int.parse(data[i]['id']);
-
-  //     if (id > max) {
-  //       max = id;
-  //     }
-  //   }
-
-  //   return (max + 1).toString();
-  // }
-
-    // Future<int> autoIncrement(String path) async {
-    //   final collectionRef = FirebaseFirestore.instance.collection(path);
-
-    //   // Ordenar por ID en orden descendente y limitar a 1. ahi tenemos el ultimo
-    //   final querySnapshot = await collectionRef
-    //       .orderBy('id', descending: true)
-    //       .limit(1)
-    //       .get();
-
-    //   // Si hay documentos, obtener el ID más alto, sino iniciar en 1
-    //   if (querySnapshot.docs.isNotEmpty) {
-    //     final lastId = querySnapshot.docs.first['id'];
-
-    //     // Convertir el ID a int por si es string en la base de datos
-    //     try {
-    //       return int.parse(lastId.toString()) + 1;
-    //     } catch (e) {
-    //       throw Exception("El valor de 'id' no es un entero válido: $lastId");
-    //     }
-    //   } else {
-    //     return 1; // Si no hay datos, comenzamos con 1
-    //   }
-    // }
-
   Future autoIncrement(String path) async {
     final collectionRef = FirebaseFirestore.instance.collection(path);
 
