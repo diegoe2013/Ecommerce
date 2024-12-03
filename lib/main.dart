@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ecommerce App',
-      initialRoute: initialRoute, 
+      initialRoute: '/welcome',
       routes: {
         '/welcome': (context) => const Welcome(),
         '/create_account': (context) =>  CreateAccount(),
